@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         with:
-          github-token: {% raw %}${{ secrets.TEMPLATES_RENDER_GH_TOKEN }}{% endraw %}
+          github-token: ${{ secrets.TEMPLATES_RENDER_GH_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'coreeng',
