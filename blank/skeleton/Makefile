@@ -1,8 +1,8 @@
 projectDir := $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 os := $(shell uname)
 image_tag = $(VERSION)
-image_name = blank-app
-tenant_name = $(TENANT_NAME)
+image_name = {{ name | default("blank-app") }}
+tenant_name = {{ tenant | default("$(TENANT_NAME)") }}
 
 FAST_FEEDBACK_PATH = fast-feedback
 EXTENDED_TEST_PATH = extended-test

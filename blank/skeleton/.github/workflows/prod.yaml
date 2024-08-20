@@ -1,4 +1,4 @@
-name: Prod
+name: {{ name | default("") }} Prod
 
 on:
   workflow_dispatch:
@@ -19,4 +19,4 @@ jobs:
     needs: [get-latest-version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-prod.yaml@v1
     with:
-      version: ${{ needs.get-latest-version.outputs.version }}
+      version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}

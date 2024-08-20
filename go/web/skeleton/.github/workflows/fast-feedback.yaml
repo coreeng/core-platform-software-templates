@@ -1,4 +1,4 @@
-name: Fast Feedback
+name: {{ name | default("") }} Fast Feedback
 
 on:
   workflow_dispatch:
@@ -17,10 +17,10 @@ jobs:
   version:
     uses: coreeng/p2p/.github/workflows/p2p-version.yaml@v1
     secrets:
-      git-token: ${{ secrets.GITHUB_TOKEN }}
+      git-token: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
     
   fastfeedback:
     needs: [version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
     with:
-     version: ${{ needs.version.outputs.version }}
+     version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}

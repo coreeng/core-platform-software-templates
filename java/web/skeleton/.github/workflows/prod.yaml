@@ -1,4 +1,4 @@
-name: Prod
+name: {{ name | default("") }} Prod
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
   get-image-name:
     runs-on: ubuntu-latest
     outputs:
-      image-name: ${{ steps.image-name.outputs.image_name }}
+      image-name: {% raw %}${{ steps.image-name.outputs.image_name }}{% endraw %}
     steps:
       - uses: actions/checkout@v4
       - id: image-name
@@ -26,10 +26,10 @@ jobs:
     needs: [get-image-name]
     uses: coreeng/p2p/.github/workflows/p2p-get-latest-image-prod.yaml@v1
     with:
-      image-name: ${{ needs.get-image-name.outputs.image-name }}
+      image-name: {% raw %}${{ needs.get-image-name.outputs.image-name }}{% endraw %}
 
   prod:
     needs: [get-latest-version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-prod.yaml@v1
     with:
-      version: ${{ needs.get-latest-version.outputs.version }}
+      version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
