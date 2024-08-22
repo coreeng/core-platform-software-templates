@@ -1,4 +1,4 @@
-rootProject.name = {{ name | default("java-web") }}
+rootProject.name = '{{ name | default("java-web") }}'
 
 include 'functional'
 include 'service'
