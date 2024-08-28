@@ -1,7 +1,7 @@
 projectDir := $(realpath $(dir $(firstword $(MAKEFILE_LIST))))
 os := $(shell uname)
-app_name = {{ name | default("java-web") }}
-tenant_name = {{ tenant | default("$(TENANT_NAME)") }}
+app_name = {{ name }}
+tenant_name = {{ tenant }}
 image_name = $(app_name)
 image_tag = $(VERSION)
 
