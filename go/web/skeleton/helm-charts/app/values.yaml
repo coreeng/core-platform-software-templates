@@ -20,6 +20,8 @@ nft:
     limits:
       cpu: 1000m
       memory: 512Mi
+integration:
+  image:
 extended:
   image:
   endpoint: service
