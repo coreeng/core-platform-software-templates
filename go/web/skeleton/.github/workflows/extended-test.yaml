@@ -1,4 +1,4 @@
-name: {{ name | default("") }} Extended Test
+name: {{ name }} Extended Test
 
 on:
   workflow_dispatch:
@@ -10,26 +10,15 @@ permissions:
   id-token: write
 
 jobs:
-  get-image-name:
-    runs-on: ubuntu-latest
-    outputs:
-      image-name: {% raw %}${{ steps.image-name.outputs.image_name }}{% endraw %}
-    steps:
-      - uses: actions/checkout@v4
-      - id: image-name
-        run: |
-          image="$(make p2p-image)"
-          echo "Image name: '$image'"
-          echo "image_name=$image" >> $GITHUB_OUTPUT
-
   get-latest-version:
-    needs: [get-image-name]
     uses: coreeng/p2p/.github/workflows/p2p-get-latest-image-extended-test.yaml@v1
     with:
-      image-name: {% raw %}${{ needs.get-image-name.outputs.image-name }}{% endraw %}
+      image-name: {{ name }}
 
   extendedtests:
     needs: [get-latest-version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-extended-test.yaml@v1
     with:
       version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
+      version-prefix: {{ version_prefix }}
+      working-directory: {{ working_directory }}
