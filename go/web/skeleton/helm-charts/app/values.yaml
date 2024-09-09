@@ -1,4 +1,4 @@
-appName: {{ name | default("") }}
+appName: {{ name }}
 registry:
 domain:
 appUrlSuffix:
