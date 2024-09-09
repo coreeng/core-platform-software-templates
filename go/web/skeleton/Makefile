@@ -4,6 +4,7 @@ app_name = {{ name }}
 tenant_name = {{ tenant }}
 image_name = $(app_name)
 image_tag = $(VERSION)
+helm_test_timeout_duration = 2m
 
 FAST_FEEDBACK_PATH = fast-feedback
 EXTENDED_TEST_PATH = extended-test
