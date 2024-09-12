@@ -40,35 +40,19 @@ p2p-image:
 p2p-build: lint service-build service-push ## Builds the service image and pushes it to the registry
 
 .PHONY: p2p-functional
-p2p-functional: namespace = $(tenant_name)-functional
+p2p-functional: namespace_environment=functional
 p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional helm tests
-	$(eval POD_NAME := $(app_name)-functional-test)
-	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
-	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
-		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
-	fi
-	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
+	$(MAKE) helm-test-$(namespace_environment)
 
 .PHONY: p2p-nft
-p2p-nft: namespace = $(tenant_name)-nft
+p2p-nft: namespace_environment=nft
 p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT helm tests
-	$(eval POD_NAME := $(app_name)-nft-test)
-	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
-	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
-		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
-	fi
-	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
-
+	$(MAKE) helm-test-$(namespace_environment)
 
 .PHONY: p2p-integration
-p2p-integration: namespace = $(tenant_name)-integration
+p2p-integration: namespace_environment=integration
 p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only Integration helm tests
-	$(eval POD_NAME := $(app_name)-integration-test)
-	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
-	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
-		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
-	fi
-	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
+	$(MAKE) helm-test-$(namespace_environment)
 
 .PHONY: p2p-extended-test
 p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended  ## Runs extended tests
@@ -168,6 +152,7 @@ deploy-functional: ## Deploy helm chart of the app to functional namespace
 		--set functional.image=$(image_name)-functional \
 		--set tenantName=$(tenant_name) \
 		--set appName=$(app_name) \
+		--set service.resources.requests.cpu=0m \
 		--atomic
 	helm list -n $(tenant_name)-functional ## list installed charts in the given tenant namespace
 
@@ -200,6 +185,7 @@ deploy-integration:  ## Deploy helm chart of the app to integration namespace
 		--set dashboarding=$(DASHBOARDING) \
 		--set tenantName=$(tenant_name) \
 		--set appName=$(app_name) \
+		--set service.resources.requests.cpu=0m \
 		--atomic
 	helm list -n $(tenant_name)-integration ## list installed charts in the given tenant namespace
 
@@ -259,3 +245,18 @@ p2p-promote-to-extended-test:  p2p-promote-generic
 p2p-promote-to-prod:  source_repo_path=$(EXTENDED_TEST_PATH)
 p2p-promote-to-prod:  dest_repo_path=$(PROD_PATH)
 p2p-promote-to-prod:  p2p-promote-generic
+
+.PHONY: helm-test-%
+helm-test-%:
+	echo "### helm $* tests run ###"
+	$(eval POD_NAME := $(app_name)-$*-test)
+	trap '$(MAKE) scale-down-$*' SIGINT SIGTERM ERR EXIT; helm test $(app_name) -n $(tenant_name)-$* --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
+	@if ! kubectl -n $(tenant_name)-$* get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
+		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; \
+		(echo Logs: $(call logs_url)  && exit 1); \
+	fi
+	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
+
+.PHONY: scale-down-%
+scale-down-%: ## Scale down deployment
+	kubectl -n $(tenant_name)-$* scale --replicas=0 deployment/$(app_name)

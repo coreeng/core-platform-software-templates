@@ -9,6 +9,7 @@ spec:
   containers:
     - name: functional-tests
       image: "{{ .Values.registry }}/{{ .Values.functional.image }}:{{ .Values.tag }}"
+      resources: {{ .Values.functional.resources | toJson }}
       env:
         - name: SERVICE_ENDPOINT
           value: "http://{{ .Values.appName }}"

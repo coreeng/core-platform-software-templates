@@ -10,18 +10,29 @@ prometheusEndpoint:
 
 functional:
   image:
+  resources:
+    requests:
+      cpu: 0m
+      memory: 1024Mi
+    limits:
+      memory: 1024Mi
 nft:
   image:
   endpoint: ingress
   resources:
     requests:
       cpu: 1000m
-      memory: 256Mi
+      memory: 1024Mi
     limits:
-      cpu: 1000m
-      memory: 512Mi
+      memory: 1024Mi
 integration:
   image:
+  resources:
+    requests:
+      cpu: 0m
+      memory: 1024Mi
+    limits:
+      memory: 1024Mi
 extended:
   image:
   endpoint: service
@@ -29,14 +40,16 @@ extended:
   resources:
     requests:
       cpu: 1000m
-      memory: 256Mi
+      memory: 1024Mi
     limits:
       cpu: 1000m
-      memory: 512Mi
+      memory: 1024Mi
 service:
   image:
   replicas: 2
   resources:
     requests:
       cpu: 700m
-      memory: 300Mi
+      memory: 1024Mi
+    limits:
+      memory: 1024Mi
