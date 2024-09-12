@@ -4,6 +4,7 @@ app_name = {{ name }}
 tenant_name = {{ tenant }}
 image_name = $(app_name)
 image_tag = $(VERSION)
+helm_test_timeout_duration = 2m
 
 FAST_FEEDBACK_PATH = fast-feedback
 EXTENDED_TEST_PATH = extended-test
@@ -41,14 +42,33 @@ p2p-build: lint service-build service-push ## Builds the service image and pushe
 .PHONY: p2p-functional
 p2p-functional: namespace = $(tenant_name)-functional
 p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional helm tests
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-functional-test
-	@echo Logs: $(call logs_url,"$(app_name)-functional-test",$(current_timestamp))
+	$(eval POD_NAME := $(app_name)-functional-test)
+	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
+	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
+		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
+	fi
+	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
 
 .PHONY: p2p-nft
 p2p-nft: namespace = $(tenant_name)-nft
 p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT helm tests
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-nft-test
-	@echo Logs: $(call logs_url,"$(app_name)-nft-test",$(current_timestamp))
+	$(eval POD_NAME := $(app_name)-nft-test)
+	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
+	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
+		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
+	fi
+	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
+
+
+.PHONY: p2p-integration
+p2p-integration: namespace = $(tenant_name)-integration
+p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only Integration helm tests
+	$(eval POD_NAME := $(app_name)-integration-test)
+	helm test $(app_name) -n $(namespace) --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
+	@if ! kubectl -n $(namespace) get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
+		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; exit 1; \
+	fi
+	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
 
 .PHONY: p2p-extended-test
 p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended  ## Runs extended tests
@@ -70,6 +90,10 @@ create-ns-functional: create-namespace
 .PHONY: create-ns-nft
 create-ns-nft: env=nft
 create-ns-nft: create-namespace
+
+.PHONY: create-ns-integration
+create-ns-integration: env=integration
+create-ns-integration: create-namespace
 
 .PHONY: create-ns-extended
 create-ns-extended: env=extended
@@ -109,6 +133,10 @@ build-functional: ## Build the functional application, and package as a Docker i
 build-nft: ## Build the non-functional-tests application, and package as a Docker image
 	docker build --file nft/Dockerfile --tag $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name)-nft:$(image_tag) .
 
+.PHONY: build-integration
+build-integration: ## Build the integration tests application, and package as a Docker image
+	docker build --file integration/Dockerfile --tag $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name)-integration:$(image_tag) .
+
 .PHONY: build-extended
 build-extended:
 	docker build --file extended/Dockerfile --tag $(REGISTRY)/$(EXTENDED_TEST_PATH)/$(image_name)-extended:$(image_tag) .
@@ -120,6 +148,10 @@ push-functional: ## Push the Functional Docker image to an image registry
 .PHONY: push-nft
 push-nft: ## Push the NFT Docker image to an image registry
 	docker image push $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name)-nft:$(image_tag)
+
+.PHONY: push-integration
+push-integration: ## Push the Integration test Docker image to an image registry
+	docker image push $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name)-integration:$(image_tag)
 
 .PHONY: push-extended
 push-extended:
@@ -154,6 +186,22 @@ deploy-nft:  ## Deploy helm chart of the app to nft namespace
 		--set appName=$(app_name) \
 		--atomic
 	helm list -n $(tenant_name)-nft ## list installed charts in the given tenant namespace
+
+.PHONY: deploy-integration
+deploy-integration:  ## Deploy helm chart of the app to integration namespace
+	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-integration \
+		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
+		--set domain=$(BASE_DOMAIN) \
+		--set appUrlSuffix="-$(tenant_name)-integration" \
+		--set tag=$(image_tag) \
+		--set service.image=$(image_name) \
+		--set integration.image=$(image_name)-integration \
+		--set monitoring=$(MONITORING) \
+		--set dashboarding=$(DASHBOARDING) \
+		--set tenantName=$(tenant_name) \
+		--set appName=$(app_name) \
+		--atomic
+	helm list -n $(tenant_name)-integration ## list installed charts in the given tenant namespace
 
 .PHONY: deploy-extended
 deploy-extended:
