@@ -1,6 +1,5 @@
 #!/bin/bash
 set -euo pipefail
-set +x
 
 subenv=$1
 tenant_name=$2

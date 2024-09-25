@@ -6,11 +6,10 @@ tenant_name=$2
 app_name=${3:-$tenant_name}
 scale_down=${4:-false}
 timeout=${5:-"3m"}
-test_name=${6:-$tenant_name-$subenv}
+test_name=${6:-$tenant_name-$subenv-test}
 
 namespace="${tenant_name}-${subenv}"
 
-POD_NAME=${app_name}-${subenv}-test
 
 printLogs() {
     current_timestamp=$(date +%s)
@@ -31,5 +30,5 @@ scaleDownApp() {
 trap 'printLogs && scaleDownApp' SIGINT SIGTERM ERR EXIT 
 logs_start=$(date +%s)
 
-helm test ${tenant_name}-${subenv} -n ${test_name} --filter name=${POD_NAME} --timeout ${timeout}
+helm test ${app_name} -n ${namespace} --filter name=${test_name} --timeout ${timeout}
 # kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/${test_name} -n ${namespace} --timeout ${extended_test_wait_timeout}
