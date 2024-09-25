@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+set +x
 
 subenv=$1
 tenant_name=$2
@@ -31,5 +32,5 @@ scaleDownApp() {
 trap 'printLogs && scaleDownApp' SIGINT SIGTERM ERR EXIT 
 logs_start=$(date +%s)
 
-helm test ${tenant_name}-${subenv} -n ${test_name} --filter name=${POD_NAME} --timeout ${timeout}
+helm test ${test_name} -n ${namespace} --filter name=${POD_NAME} --timeout ${timeout}
 # kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/${test_name} -n ${namespace} --timeout ${extended_test_wait_timeout}
