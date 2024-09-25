@@ -38,17 +38,17 @@ p2p-build: lint service-build service-push ## Builds the service image and pushe
 .PHONY: p2p-functional
 p2p-functional: namespace_environment=functional
 p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-nft
 p2p-nft: namespace_environment=nft
 p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-integration
 p2p-integration: namespace_environment=integration
 p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only Integration helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=false
 
 .PHONY: p2p-extended-test
 p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended  ## Runs extended tests
@@ -65,11 +65,11 @@ p2p-prod: deploy-prod ## Deploy helm chart of the app to production namespace
 
 .PHONY: create-ns-functional
 create-ns-functional: env=functional
-create-ns-functional: create-namespace 
+create-ns-functional: create-namespace
 
 .PHONY: create-ns-nft
 create-ns-nft: env=nft
-create-ns-nft: create-namespace 
+create-ns-nft: create-namespace
 
 .PHONY: create-ns-integration
 create-ns-integration: env=integration
@@ -77,7 +77,7 @@ create-ns-integration: create-namespace
 
 .PHONY: create-ns-extended
 create-ns-extended: env=extended
-create-ns-extended: create-namespace 
+create-ns-extended: create-namespace
 
 
 ## Internal Tasks, not part of the P2P
@@ -97,7 +97,7 @@ lint: ## Linting go code
 .PHONY: service-build
 service-build:
 	docker build --file Dockerfile --tag $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name):$(image_tag) .
-	
+
 .PHONY: service-push
 service-push: ## Push the service image
 	docker image push $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name):$(image_tag)
@@ -203,10 +203,7 @@ deploy-extended:
 .PHONY: run-extended
 run-extended: namespace = $(tenant_name)-extended
 run-extended:
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-extended-test
-	kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/$(app_name)-extended-test -n $(namespace) --timeout $(extended_test_wait_timeout)
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-extended-test-validate
-	@
+	./scripts/helm-test.sh extended $(tenant_name) $(app_name) true $(extended_test_wait_timeout)
 
 .PHONY: deploy-prod
 deploy-prod: ## Deploy helm chart of the app to production namespace
