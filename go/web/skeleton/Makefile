@@ -203,7 +203,7 @@ deploy-extended:
 .PHONY: run-extended
 run-extended: namespace = $(tenant_name)-extended
 run-extended:
-	./scripts/helm-test.sh extended $(tenant_name) $(app_name) true $(extended_test_wait_timeout)
+	./scripts/extended-test.sh extended $(tenant_name) $(app_name) true $(extended_test_wait_timeout)
 
 .PHONY: deploy-prod
 deploy-prod: ## Deploy helm chart of the app to production namespace

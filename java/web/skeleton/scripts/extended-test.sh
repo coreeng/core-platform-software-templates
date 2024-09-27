@@ -5,11 +5,12 @@ subenv=$1
 tenant_name=$2
 app_name=${3:-$tenant_name}
 scale_down=${4:-false}
-timeout=${5:-"3m"}
+timeout=${5:-"15m"}
+test_name=${app_name}-${subenv}-test
 
-POD_NAME=${app_name}-${subenv}-test
+./scripts/helm-test.sh $subenv $tenant_name $app_name false $timeout $test_name
 
-./helm-test.sh executeTests $subenv $tenant_name $app_name false $timeout $tenant_name-$subenv-test
+kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/${test_name} -n ${namespace} --timeout ${timeout}
 
-./helm-test.sh executeTests $subenv $tenant_name $app_name $scale_down $timeout $tenant_name-$subenv-test-validate
+./scripts/helm-test.sh $subenv $tenant_name $app_name $scale_down $timeout $test_name-validate
 

@@ -31,4 +31,3 @@ trap 'printLogs && scaleDownApp' SIGINT SIGTERM ERR EXIT
 logs_start=$(date +%s)
 
 helm test ${app_name} -n ${namespace} --filter name=${test_name} --timeout ${timeout}
-# kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/${test_name} -n ${namespace} --timeout ${extended_test_wait_timeout}
