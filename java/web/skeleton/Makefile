@@ -18,10 +18,6 @@ prometheusUrl=http://prometheus-$(tenant_name).$(tenant_name):9090
 extended_test_replicas = 0 # until we have autoscaling working
 extended_test_wait_timeout = 15m
 
-logs_start = "$(shell date +%s)"
-current_timestamp = $$(date +%s)
-logs_url = "https://grafana.$(INTERNAL_SERVICES_DOMAIN)/explore?orgId=1&left=%7B%22datasource%22:%22CloudLogging%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22queryText%22:%22resource.type%3D%5C%22k8s_container%5C%22%5Cnresource.labels.namespace_name%3D%5C%22$(namespace)%5C%22%5Cnresource.labels.pod_name%3D%5C%22$(1)%5C%22%22,%22projectId%22:%22$(PROJECT_ID)%22,%22bucketId%22:%22global%2Fbuckets%2F_Default%22,%22viewId%22:%22_AllLogs%22%7D%5D,%22range%22:%7B%22from%22:%22$(logs_start)000%22,%22to%22:%22$(2)000%22%7D%7D"
-
 .PHONY: help-p2p
 help-p2p:
 	@grep -E '^[a-zA-Z1-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep p2p | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -42,17 +38,17 @@ p2p-build: lint service-build service-push ## Builds the service image and pushe
 .PHONY: p2p-functional
 p2p-functional: namespace_environment=functional
 p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-nft
 p2p-nft: namespace_environment=nft
 p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-integration
 p2p-integration: namespace_environment=integration
 p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only Integration helm tests
-	$(MAKE) helm-test-$(namespace_environment)
+	$(MAKE) helm-test-$(namespace_environment) scale_down=false
 
 .PHONY: p2p-extended-test
 p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended  ## Runs extended tests
@@ -210,10 +206,7 @@ deploy-extended:
 .PHONY: run-extended
 run-extended: namespace = $(tenant_name)-extended
 run-extended:
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-extended-test
-	kubectl wait --for=jsonpath='{.status.stage}'=finished testrun/$(app_name)-extended-test -n $(namespace) --timeout $(extended_test_wait_timeout)
-	helm test $(app_name) -n $(namespace) --filter name=$(app_name)-extended-test-validate
-	@echo Logs: $(call logs_url,"$(app_name)-extended-test-validate",$(current_timestamp))
+	./scripts/extended-test.sh extended $(tenant_name) $(app_name) true $(extended_test_wait_timeout)
 
 .PHONY: deploy-prod
 deploy-prod: ## Deploy helm chart of the app to production namespace
@@ -249,14 +242,4 @@ p2p-promote-to-prod:  p2p-promote-generic
 .PHONY: helm-test-%
 helm-test-%:
 	echo "### helm $* tests run ###"
-	$(eval POD_NAME := $(app_name)-$*-test)
-	trap '$(MAKE) scale-down-$*' SIGINT SIGTERM ERR EXIT; helm test $(app_name) -n $(tenant_name)-$* --filter name=$(POD_NAME) --timeout $(helm_test_timeout_duration)
-	@if ! kubectl -n $(tenant_name)-$* get po $(POD_NAME) -o jsonpath='{.spec.containers[].image}' | grep "$(image_tag)" > /dev/null 2>&1 ; then \
-		echo "ERROR: Helm test job $(POD_NAME), version: $(image_tag) not found!"; \
-		(echo Logs: $(call logs_url)  && exit 1); \
-	fi
-	@echo Logs: $(call logs_url,$(POD_NAME),$(current_timestamp))
-
-.PHONY: scale-down-%
-scale-down-%: ## Scale down deployment
-	kubectl -n $(tenant_name)-$* scale --replicas=0 deployment/$(app_name)
+	./scripts/helm-test.sh $* $(tenant_name) $(app_name) $(scale_down) $(helm_test_timeout_duration)
