@@ -205,7 +205,7 @@ deploy-extended:
 
 .PHONY: run-extended
 run-extended: namespace = $(tenant_name)-extended
-run-extended:
+run-extended: chmod-scripts
 	./scripts/extended-test.sh extended $(tenant_name) $(app_name) true $(extended_test_wait_timeout)
 
 .PHONY: deploy-prod
@@ -239,7 +239,11 @@ p2p-promote-to-prod:  source_repo_path=$(EXTENDED_TEST_PATH)
 p2p-promote-to-prod:  dest_repo_path=$(PROD_PATH)
 p2p-promote-to-prod:  p2p-promote-generic
 
+.PHONY: chmod-scripts
+chmod-scripts:
+	chmod -R +x ./scripts
+
 .PHONY: helm-test-%
-helm-test-%:
+helm-test-%: chmod-scripts
 	echo "### helm $* tests run ###"
 	./scripts/helm-test.sh $* $(tenant_name) $(app_name) $(scale_down) $(helm_test_timeout_duration)
