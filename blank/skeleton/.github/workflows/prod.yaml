@@ -21,4 +21,6 @@ jobs:
     with:
       version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
       version-prefix: {{ version_prefix }}
+{%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
+{%- endif %}
