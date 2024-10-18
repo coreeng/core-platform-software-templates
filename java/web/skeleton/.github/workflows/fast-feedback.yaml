@@ -5,9 +5,18 @@ on:
   push:
     branches:
       - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
   pull_request:
     branches:
       - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
+
 
 permissions:
   contents: write
@@ -26,4 +35,6 @@ jobs:
     uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
     with:
       version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
+{%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
+{% endif %}
