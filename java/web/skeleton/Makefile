@@ -3,6 +3,7 @@ os := $(shell uname)
 app_name = {{ name }}
 tenant_name = {{ tenant }}
 image_name = $(app_name)
+VERSION ?= $(shell git rev-parse --short HEAD)
 image_tag = $(VERSION)
 helm_test_timeout_duration = 2m
 
