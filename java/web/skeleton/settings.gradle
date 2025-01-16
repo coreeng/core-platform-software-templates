@@ -1,5 +1,6 @@
 rootProject.name = '{{ name }}'
 
 include 'functional'
+include 'nft'
 include 'integration'
 include 'service'
