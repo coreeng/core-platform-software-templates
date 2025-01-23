@@ -41,17 +41,17 @@ p2p-build: lint service-build service-push ## Builds the service image and pushe
 
 .PHONY: p2p-functional
 p2p-functional: namespace_environment=functional
-p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional helm tests
+p2p-functional: build-functional push-functional create-ns-functional deploy-functional ## Runs only functional tests
 	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-nft
 p2p-nft: namespace_environment=nft
-p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT helm tests
+p2p-nft: build-nft push-nft create-ns-nft deploy-nft ## Runs only NFT tests
 	$(MAKE) helm-test-$(namespace_environment) scale_down=true
 
 .PHONY: p2p-integration
 p2p-integration: namespace_environment=integration
-p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only Integration helm tests
+p2p-integration: build-integration push-integration create-ns-integration deploy-integration ## Runs only integration tests
 	$(MAKE) helm-test-$(namespace_environment) scale_down=false
 
 .PHONY: p2p-extended-test
@@ -63,7 +63,7 @@ p2p-extended-test: build-extended push-extended create-ns-extended deploy-extend
 	fi
 
 .PHONY: p2p-prod
-p2p-prod: deploy-prod ## Deploy helm chart of the app to production namespace
+p2p-prod: deploy-prod ## Deploy to production
 
 ## Namespace creation
 
@@ -224,7 +224,7 @@ deploy-prod: ## Deploy helm chart of the app to production namespace
 	helm list -n $(tenant_name) ## list installed charts in the given tenant namespace
 
 .PHONY: p2p-promote-generic
-p2p-promote-generic: ## Generic promote functionality
+p2p-promote-generic:
 	corectl p2p promote $(image_name):${image_tag} \
 		--source-stage $(source_repo_path) \
 		--dest-registry $(REGISTRY) \
