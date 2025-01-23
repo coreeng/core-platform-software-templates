@@ -51,7 +51,7 @@ p2p-integration: build-integration push-integration create-ns-integration deploy
 	$(MAKE) helm-test-$(namespace_environment) scale_down=false
 
 .PHONY: p2p-extended-test
-p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended  ## Runs extended tests
+p2p-extended-test: build-extended push-extended create-ns-extended deploy-extended ## Runs extended tests
 	@if [ "$(RUN_EXTENDED_TEST)" != "true" ] ; then \
 		echo "Skipping extended test" ; \
 	else \
@@ -85,14 +85,14 @@ create-ns-extended: create-namespace
 .PHONY: create-namespace
 create-namespace:
 	awk -v NAME="$(tenant_name)" -v ENV="$(env)" '{ \
-		sub(/{tenant_name}/, NAME);  \
-		sub(/{env}/, ENV);  \
-		print;  \
+		sub(/{tenant_name}/, NAME); \
+		sub(/{env}/, ENV); \
+		print; \
 	}' resources/subns-anchor.yaml | kubectl apply -f -
 
 .PHONY: lint
-lint: ## Linting go code
-	docker run -v "$$(pwd)":/var/app ghcr.io/mgechev/revive:v1.3.2  -config /var/app/revive.toml -formatter stylish  ./var/app/cmd/service ./var/app/cmd/handler
+lint: ## Linting code
+	docker run -v "$$(pwd)":/var/app ghcr.io/mgechev/revive:v1.3.2 -config /var/app/revive.toml -formatter stylish ./var/app/cmd/service ./var/app/cmd/handler
 
 .PHONY: service-build
 service-build:
@@ -150,7 +150,7 @@ deploy-functional: ## Deploy helm chart of the app to functional namespace
 	helm list -n $(tenant_name)-functional ## list installed charts in the given tenant namespace
 
 .PHONY: deploy-nft
-deploy-nft:  ## Deploy helm chart of the app to nft namespace
+deploy-nft: ## Deploy helm chart of the app to nft namespace
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-nft \
 		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
 		--set domain=$(BASE_DOMAIN) \
@@ -166,7 +166,7 @@ deploy-nft:  ## Deploy helm chart of the app to nft namespace
 	helm list -n $(tenant_name)-nft ## list installed charts in the given tenant namespace
 
 .PHONY: deploy-integration
-deploy-integration:  ## Deploy helm chart of the app to integration namespace
+deploy-integration: ## Deploy helm chart of the app to integration namespace
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-integration \
 		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
 		--set domain=$(BASE_DOMAIN) \
@@ -220,21 +220,21 @@ deploy-prod: ## Deploy helm chart of the app to production namespace
 	helm list -n $(tenant_name) ## list installed charts in the given tenant namespace
 
 .PHONY: p2p-promote-generic
-p2p-promote-generic:  ## Generic promote functionality
+p2p-promote-generic: ## Generic promote functionality
 	corectl p2p promote $(image_name):${image_tag} \
-        		--source-stage $(source_repo_path) \
-        		--dest-registry $(REGISTRY) \
-        		--dest-stage $(dest_repo_path)
+		--source-stage $(source_repo_path) \
+		--dest-registry $(REGISTRY) \
+		--dest-stage $(dest_repo_path)
 
 .PHONY: p2p-promote-to-extended-test
 p2p-promote-to-extended-test: source_repo_path=$(FAST_FEEDBACK_PATH)
 p2p-promote-to-extended-test: dest_repo_path=$(EXTENDED_TEST_PATH)
-p2p-promote-to-extended-test:  p2p-promote-generic
+p2p-promote-to-extended-test: p2p-promote-generic
 
 .PHONY: p2p-promote-to-prod
-p2p-promote-to-prod:  source_repo_path=$(EXTENDED_TEST_PATH)
-p2p-promote-to-prod:  dest_repo_path=$(PROD_PATH)
-p2p-promote-to-prod:  p2p-promote-generic
+p2p-promote-to-prod: source_repo_path=$(EXTENDED_TEST_PATH)
+p2p-promote-to-prod: dest_repo_path=$(PROD_PATH)
+p2p-promote-to-prod: p2p-promote-generic
 
 .PHONY: chmod-scripts
 chmod-scripts:

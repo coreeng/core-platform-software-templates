@@ -15,12 +15,12 @@ p2p-image:
 	@echo $(image_name)
 
 .PHONY: p2p-build
-p2p-build: 
+p2p-build:
 	docker build --file Dockerfile --tag $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name):$(image_tag) .
 	docker image push $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name):$(image_tag)
 
 .PHONY: p2p-functional
-p2p-functional: 
+p2p-functional:
 
 .PHONY: p2p-nft
 p2p-nft:
@@ -29,25 +29,25 @@ p2p-nft:
 p2p-integration:
 
 .PHONY: p2p-extended-test
-p2p-extended-test:  
+p2p-extended-test:
 	
 .PHONY: p2p-prod
-p2p-prod: 
+p2p-prod:
 
 .PHONY: p2p-promote-generic
-p2p-promote-generic:  ## Generic promote functionality
+p2p-promote-generic: ## Generic promote functionality
 	corectl p2p promote $(image_name):${image_tag} \
-    		--source-stage $(source_repo_path) \
-    		--dest-registry $(REGISTRY) \
-    		--dest-stage $(dest_repo_path)
+		--source-stage $(source_repo_path) \
+		--dest-registry $(REGISTRY) \
+		--dest-stage $(dest_repo_path)
 
 
 .PHONY: p2p-promote-to-extended-test
 p2p-promote-to-extended-test: source_repo_path=$(FAST_FEEDBACK_PATH)
 p2p-promote-to-extended-test: dest_repo_path=$(EXTENDED_TEST_PATH)
-p2p-promote-to-extended-test:  p2p-promote-generic
+p2p-promote-to-extended-test: p2p-promote-generic
 
 .PHONY: p2p-promote-to-prod
-p2p-promote-to-prod:  source_repo_path=$(EXTENDED_TEST_PATH)
-p2p-promote-to-prod:  dest_repo_path=$(PROD_PATH)
-p2p-promote-to-prod:  p2p-promote-generic
+p2p-promote-to-prod: source_repo_path=$(EXTENDED_TEST_PATH)
+p2p-promote-to-prod: dest_repo_path=$(PROD_PATH)
+p2p-promote-to-prod: p2p-promote-generic
