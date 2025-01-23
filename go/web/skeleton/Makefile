@@ -3,8 +3,12 @@ os := $(shell uname)
 app_name = {{ name }}
 tenant_name = {{ tenant }}
 image_name = $(app_name)
+VERSION ?= $(shell git rev-parse --short HEAD)
 image_tag = $(VERSION)
 helm_test_timeout_duration = 2m
+
+## Default to local registry unless it is set
+REGISTRY ?= local
 
 FAST_FEEDBACK_PATH = fast-feedback
 EXTENDED_TEST_PATH = extended-test
@@ -244,4 +248,3 @@ chmod-scripts:
 helm-test-%: chmod-scripts
 	echo "### helm $* tests run ###"
 	./scripts/helm-test.sh $* $(tenant_name) $(app_name) $(scale_down) $(helm_test_timeout_duration)
-
