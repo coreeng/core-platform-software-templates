@@ -32,6 +32,8 @@ jobs:
   fastfeedback:
     needs: [version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
+    secrets:
+      env_vars: ${{ secrets.env_vars }}
     with:
       version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
 {%- if working_directory is defined and working_directory %}
