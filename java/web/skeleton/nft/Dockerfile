@@ -18,7 +18,6 @@ USER 12345
 WORKDIR /home/k6
 
 COPY ./resources/load-testing/ /home/k6/load-testing
-RUN chmod -R +x load-testing && chown -R 12345:12345 load-testing
 
 ENV K6_OUT=prometheus
 
