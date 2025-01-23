@@ -22,7 +22,7 @@ scaleDownApp() {
 		echo "Scaling down apps on namespace ${tenant_name}-${subenv}"
 		kubectl -n "${tenant_name}-${subenv}" scale --replicas=0 deployments,statefulsets --all || echo "Failed to scale down deployments/statefulsets"
 	else
-		echo "not scalling down"
+		echo "Not scaling down apps on namespace ${tenant_name}-${subenv}"
 	fi
 }
 
