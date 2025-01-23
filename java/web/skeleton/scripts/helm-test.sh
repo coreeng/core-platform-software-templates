@@ -18,7 +18,7 @@ printLogs() {
 }
 
 scaleDownApp() {
-	if [ "${scale_down}" == true ] ; then
+	if [ "${scale_down}" = "true" ] ; then
 		echo "Scaling down apps on namespace ${tenant_name}-${subenv}"
 		kubectl -n "${tenant_name}-${subenv}" scale --replicas=0 deployments,statefulsets --all || echo "Failed to scale down deployments/statefulsets"
 	else
