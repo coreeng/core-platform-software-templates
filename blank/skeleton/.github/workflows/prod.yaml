@@ -18,6 +18,8 @@ jobs:
   prod:
     needs: [get-latest-version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-prod.yaml@v1
+    secrets:
+      env_vars: ${{ secrets.env_vars }}
     with:
       version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
       version-prefix: {{ version_prefix }}

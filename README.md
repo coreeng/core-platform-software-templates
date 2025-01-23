@@ -2,4 +2,4 @@
 
 Software templates to be used by users of the Core Platform for quick bootstrap of new applications.
 
-[corectl](https://github.com/coreeng/corectl) CLI should be used for working with templates (exploring, rendering, creating applications from templates)
+The [corectl](https://github.com/coreeng/corectl) CLI tool should be used for working with templates (exploring, rendering, and creating applications from templates).

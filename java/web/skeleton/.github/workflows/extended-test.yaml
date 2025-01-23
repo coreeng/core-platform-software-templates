@@ -18,9 +18,11 @@ jobs:
   extendedtests:
     needs: [get-latest-version]
     uses: coreeng/p2p/.github/workflows/p2p-workflow-extended-test.yaml@v1
+    secrets:
+      env_vars: ${{ secrets.env_vars }}
     with:
       version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
       version-prefix: {{ version_prefix }}
 {%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
-{% endif %}
+{%- endif %}
