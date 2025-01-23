@@ -106,9 +106,6 @@ service-build:
 service-push: ## Push the service image
 	docker image push $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name):$(image_tag)
 
-p2p-build: lint
-	docker build --file Dockerfile --tag $(REGISTRY)/$(image_name):$(image_tag) .
-
 .PHONY: build-functional
 build-functional: ## Build the functional application, and package as a Docker image
 	docker build --file functional/Dockerfile --tag $(REGISTRY)/$(FAST_FEEDBACK_PATH)/$(image_name)-functional:$(image_tag) .
