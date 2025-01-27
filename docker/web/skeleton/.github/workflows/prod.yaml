@@ -1,0 +1,28 @@
+name: {{ name }} Prod
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 5 * * 1,5'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  get-latest-version:
+    uses: coreeng/p2p/.github/workflows/p2p-get-latest-image-prod.yaml@v1
+    with:
+      image-name: {{ name }}
+
+  prod:
+    needs: [get-latest-version]
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-prod.yaml@v1
+    secrets:
+      env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
+    with:
+      version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
+      version-prefix: {{ version_prefix }}
+{%- if working_directory is defined and working_directory %}
+      working-directory: {{ working_directory }}
+{%- endif %}
