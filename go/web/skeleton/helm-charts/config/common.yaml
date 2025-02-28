@@ -1,0 +1,3 @@
+service:
+    environmentVariables:
+        TEST_COMMON_ENV_VAR: common-env-var-value
