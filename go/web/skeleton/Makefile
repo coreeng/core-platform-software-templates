@@ -58,6 +58,8 @@ push-%:
 .PHONY: deploy-%
 deploy-%:
 	helm upgrade --install "$(p2p_app_name)" helm-charts/app -n "$(p2p_namespace)" \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/$*.yaml
 		--set appUrlSuffix="$(p2p_app_url_suffix)" \
 		--set registry="$(p2p_registry)" \
 		--set tenantName="$(p2p_tenant_name)" \
