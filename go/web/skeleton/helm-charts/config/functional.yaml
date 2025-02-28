@@ -1,0 +1,3 @@
+service:
+    environmentVariables:
+        CONFIG_ENV_VAR_EXAMPLE: functional

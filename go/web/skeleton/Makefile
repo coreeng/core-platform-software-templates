@@ -146,6 +146,8 @@ push-extended:
 .PHONY: deploy-functional
 deploy-functional: ## Deploy helm chart of the app to functional namespace
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-functional \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/functional.yaml \
 		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
 		--set domain=$(BASE_DOMAIN) \
 		--set appUrlSuffix="-$(tenant_name)-functional" \
@@ -161,6 +163,8 @@ deploy-functional: ## Deploy helm chart of the app to functional namespace
 .PHONY: deploy-nft
 deploy-nft: ## Deploy helm chart of the app to nft namespace
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-nft \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/nft.yaml \
 		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
 		--set domain=$(BASE_DOMAIN) \
 		--set appUrlSuffix="-$(tenant_name)-nft" \
@@ -177,6 +181,8 @@ deploy-nft: ## Deploy helm chart of the app to nft namespace
 .PHONY: deploy-integration
 deploy-integration: ## Deploy helm chart of the app to integration namespace
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-integration \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/integration.yaml \
 		--set registry=$(REGISTRY)/$(FAST_FEEDBACK_PATH) \
 		--set domain=$(BASE_DOMAIN) \
 		--set appUrlSuffix="-$(tenant_name)-integration" \
@@ -194,6 +200,8 @@ deploy-integration: ## Deploy helm chart of the app to integration namespace
 .PHONY: deploy-extended
 deploy-extended:
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name)-extended \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/extended.yaml \
 		--set registry=$(REGISTRY)/$(EXTENDED_TEST_PATH) \
 		--set domain=$(BASE_DOMAIN) \
 		--set appUrlSuffix="-$(tenant_name)-extended" \
@@ -219,6 +227,8 @@ deploy-prod: ## Deploy helm chart of the app to production namespace
 	@echo $(image_tag)
 	@echo $(REGISTRY)/release
 	helm upgrade --install $(app_name) helm-charts/app -n $(tenant_name) \
+		-f helm-charts/config/common.yaml \
+		-f helm-charts/config/prod.yaml \
 		--set registry=$(REGISTRY)/$(PROD_PATH) \
 		--set domain=$(BASE_DOMAIN) \
 		--set tag=$(image_tag) \
