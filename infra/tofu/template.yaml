@@ -1,3 +1,4 @@
+---
 name: infra-tofu
 description: Infra tofu application
 skeletonPath: ./skeleton

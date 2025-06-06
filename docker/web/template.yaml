@@ -1,3 +1,4 @@
+---
 name: docker-web
 description: Docker web application
 skeletonPath: ./skeleton
