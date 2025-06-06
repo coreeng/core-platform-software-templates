@@ -1,0 +1,4 @@
+---
+name: nextjs-web
+description: Next.js web application
+skeletonPath: ./skeleton

@@ -1,0 +1,4 @@
+---
+name: static-nextra
+description: Nextra static site application
+skeletonPath: ./skeleton
