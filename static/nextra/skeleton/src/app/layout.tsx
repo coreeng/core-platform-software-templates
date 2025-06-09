@@ -21,6 +21,22 @@ const geistMono = Geist_Mono({
 
 const navbar = <Navbar logo={<b>Nextra</b>} />;
 
+const bg = { dark: "#09090b", light: "#fafafa" }
+const color = {
+  hue: {
+    dark: 216,
+    light: 221,
+  },
+  saturation: {
+    dark: 100,
+    light: 100,
+  },
+  lightness: {
+    dark: 58,
+    light: 46,
+  },
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -29,21 +45,8 @@ export default async function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head
-        backgroundColor={{ dark: "#09090b", light: "#fafafa" }}
-        color={{
-          hue: {
-            dark: 216,
-            light: 221,
-          },
-          saturation: {
-            dark: 100,
-            light: 100,
-          },
-          lightness: {
-            dark: 58,
-            light: 46,
-          },
-        }}
+        backgroundColor={bg}
+        color={color}
       ></Head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Layout
