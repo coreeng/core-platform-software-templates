@@ -1,0 +1,43 @@
+---
+name: {{ name }} Fast Feedback
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
+  pull_request:
+    branches:
+      - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  version:
+    uses: coreeng/p2p/.github/workflows/p2p-version.yaml@v1
+    with:
+      version-prefix: {{ version_prefix }}
+    secrets:
+      git-token: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+
+  fastfeedback:
+    needs: [version]
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
+    secrets:
+      env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
+    with:
+      app-name: {{ name }}
+      version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
+{%- if working_directory is defined and working_directory %}
+      working-directory: {{ working_directory }}
+{%- endif %}
