@@ -10,7 +10,7 @@ jobs:
   trigger-rendering:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.TEMPLATES_RENDER_GH_TOKEN }}
           script: |
