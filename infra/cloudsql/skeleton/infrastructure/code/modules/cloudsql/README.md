@@ -84,6 +84,8 @@ Each PostgreSQL cluster supports the following configuration:
 |-----------|------|---------|-------------|
 | `availability_type` | `string` | `"ZONAL"` | The availability type for the Cloud SQL instance, can be either `ZONAL` or `REGIONAL` |
 
+If near zero downtime planned maintenance is required please consult Google's [documentation](https://docs.cloud.google.com/sql/docs/postgres/maintenance#nearzero) for prerequisites and constraints.
+
 ##### Backup Configuration
 
 | Parameter | Type | Default | Description |
