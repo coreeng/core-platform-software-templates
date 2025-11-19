@@ -284,3 +284,35 @@ resource "null_resource" "grant_iam_user_privileges" {
     grant_version = "v1"
   }
 }
+
+# Apply password verification to the postgres user to satisfy Google Cloud security recommendations
+resource "null_resource" "apply_user_password_policy" {
+  for_each = local.postgresql_clusters_map
+
+  provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
+    command     = <<-EOT
+      set -e
+
+      echo "Applying password policy to postgres user on instance '${each.key}-${var.environment}-cluster'..."
+
+      gcloud sql users set-password-policy postgres \
+        --instance=${each.key}-${var.environment}-cluster \
+        --project=${var.infrastructure_project_id} \
+        --host=% \
+        --password-policy-enable-password-verification
+
+      echo "Password verification enabled for postgres user"
+    EOT
+  }
+
+  depends_on = [
+    module.cloudsql-postgresql
+  ]
+
+  triggers = {
+    cluster = "${each.key}-${var.environment}-cluster"
+    # Increment this version to force re-run
+    policy_version = "v1"
+  }
+}
