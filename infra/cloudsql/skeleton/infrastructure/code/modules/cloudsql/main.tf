@@ -190,12 +190,11 @@ resource "null_resource" "grant_iam_user_privileges" {
         --format='value(connectionName)')
 
       # Start Cloud SQL Proxy in background on random port with retry logic
-      # Use PID and nanoseconds to avoid port collision when running in parallel
       MAX_PORT_RETRIES=10
       PROXY_STARTED=false
 
       for port_attempt in $(seq 1 $MAX_PORT_RETRIES); do
-        PROXY_PORT=$((30000 + ($$ + $(date +%N 2>/dev/null || echo 0) + port_attempt * 137) % 10000))
+        PROXY_PORT=$((30000 + RANDOM % 10000))
         echo "Attempt $port_attempt: Starting Cloud SQL Proxy on port $PROXY_PORT..."
 
         # Start proxy and capture output
