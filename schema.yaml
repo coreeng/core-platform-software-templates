@@ -1,0 +1,17 @@
+---
+# Template YAML Schema
+
+name: str()
+description: str()
+kind: subset(enum('app', 'infra'))
+skeletonPath: str()
+config: include('config', required=False)
+
+---
+# Config schema
+config:
+  replicas: int(min=0)
+  resources:
+    limits:
+      cpu: str()
+      memory: str()
