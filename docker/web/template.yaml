@@ -1,4 +1,10 @@
 ---
 name: docker-web
 description: Docker web application
+kind: app
 skeletonPath: ./skeleton
+replicas: 2
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi

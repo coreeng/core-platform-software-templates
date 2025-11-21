@@ -1,4 +1,5 @@
 ---
 name: infra-urlrouter
 description: Infra urlrouter application
+kind: infra
 skeletonPath: ./skeleton
