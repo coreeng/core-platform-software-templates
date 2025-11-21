@@ -1,5 +1,6 @@
 ---
-name: Trigger Rendering Workflow
+name: CD
+
 on:
   push:
     branches:
@@ -7,10 +8,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  validate:
+    name: Validate
+    uses: ./.github/workflows/validate.yaml
+
   trigger-rendering:
+    name: Trigger Rendering
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/github-script@v8
+      - name: Trigger Rendering
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.TEMPLATES_RENDER_GH_TOKEN }}
           script: |

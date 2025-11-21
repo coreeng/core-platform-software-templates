@@ -1,4 +1,11 @@
 ---
 name: static-nextra
 description: Nextra static site application
+kind: app
 skeletonPath: ./skeleton
+config:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi

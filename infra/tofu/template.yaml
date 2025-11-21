@@ -1,4 +1,5 @@
 ---
 name: infra-tofu
 description: Infra tofu application
+kind: infra
 skeletonPath: ./skeleton

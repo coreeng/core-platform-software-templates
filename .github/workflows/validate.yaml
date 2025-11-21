@@ -1,0 +1,20 @@
+---
+name: Validate
+
+on: workflow_call
+
+jobs:
+  templates:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Yamale
+        id: setup-yamale
+        run: pip install yamale
+
+      - name: Validate Templates
+        id: templates-validate
+        shell: bash
+        run: make templates-validate
