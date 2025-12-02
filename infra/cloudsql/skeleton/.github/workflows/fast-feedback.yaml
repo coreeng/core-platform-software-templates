@@ -37,6 +37,7 @@ jobs:
       env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
     with:
       app-name: {{ name }}
+      tenant-name: {{ tenant }}
       version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
 {%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
