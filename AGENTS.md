@@ -65,6 +65,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `go/web` | `p2p/tests/functional/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `godog@vX.Y.Z` | matches `functional/go.mod` |
 | `go/web` | `p2p/tests/integration/go.mod` | Go version, all deps including `godog` | `go get -u` |
 | `go/web` | `p2p/tests/integration/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `godog@vX.Y.Z` | matches `integration/go.mod` |
+| `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-noble` in Dockerfile; regenerate all wrapper files (see below) |
 | `java/web` | `skeleton/service/build.gradle` | Spring Boot, Spring DM, SpringDoc, Guava, HikariCP, `sourceCompatibility`/`targetCompatibility` | [spring.io](https://spring.io/projects/spring-boot), Maven Central |
 | `java/web` | `skeleton/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` (build), `eclipse-temurin:NN-jre-noble` (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
 | `java/web` | `p2p/tests/functional/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
@@ -104,6 +105,15 @@ done
 Update all image and version pins from the inventory table. The `godog@vX.Y.Z` pin in each test Dockerfile must match the version resolved into that directory's `go.mod` by the step above.
 
 #### java/web
+
+When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.properties` file):
+
+```bash
+docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
+  docker.io/gradle:9.3.1-jdk25-noble gradle wrapper --gradle-version 9.3.1
+```
+
+This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
 
 Edit versions in `skeleton/service/build.gradle`, then validate:
 
