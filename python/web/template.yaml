@@ -1,0 +1,11 @@
+---
+name: python-web
+description: Python web application
+kind: app
+skeletonPath: ./skeleton
+config:
+  replicas: 2
+  resources:
+    limits:
+      cpu: 250m
+      memory: 512Mi
