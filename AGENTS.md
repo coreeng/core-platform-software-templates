@@ -78,13 +78,23 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `nextjs/web` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
 | `static/nextra` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
 | `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
+| `static/nextra` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
+| `static/nextra` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
 | `python/web` | `skeleton/uv.lock` | locked Python deps | `uv lock` |
 | `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `ghcr.io/astral-sh/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
+| `python/web` | `p2p/tests/functional/Dockerfile` | `python:X.Y-slim`, `behave`, `requests` | match main Dockerfile; pin behave/requests |
+| `python/web` | `p2p/tests/integration/Dockerfile` | `python:X.Y-slim`, `behave`, `requests` | match main Dockerfile; pin behave/requests |
 | `docker/web` | `skeleton/Dockerfile` | `stefanprodan/podinfo:X.Y.Z` | [podinfo releases](https://github.com/stefanprodan/podinfo/releases) |
 | `docker/web` | `p2p/tests/{functional,integration,extended}/go.mod` | Go version, all deps | `go get -u` |
 | `docker/web` | `p2p/tests/{functional,integration,extended}/Dockerfile` | `golang:X.Y.Z-trixie` | Go version in `go.mod` |
 | **all** | `p2p/tests/nft/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `prom/prometheus:vX.Y.Z`, `alpine:A.B`, `xk6@vX.Y.Z`, `xk6-prometheus@vX.Y.Z` | see [NFT tests](#nft-tests-all-templates) below |
+
+#### Update all test dependencies
+
+When updating app template dependencies, **also update every test module** for each template.
+Find them under `p2p/tests/` — update each subdirectory (functional, integration, extended, nft)
+that contains dependency files for that template.
 
 #### go/web
 
@@ -144,11 +154,17 @@ yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
 ```
 
-For `nextjs/web` only — also update `p2p/tests/functional/package.json` (no `{{ name }}`
-substitution needed):
+For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
+`{{ name }}` substitution needed; for `static/nextra`, temporarily set parent `package.json`
+`name` to a valid value so `yarn install` can run):
 
 ```bash
+# nextjs/web:
 cd nextjs/web/skeleton/p2p/tests/functional
+npx npm-check-updates -u && yarn install
+
+# static/nextra (temporarily set parent package.json "name" to valid value first):
+cd static/nextra/skeleton/p2p/tests/functional
 npx npm-check-updates -u && yarn install
 ```
 
