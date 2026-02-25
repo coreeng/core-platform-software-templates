@@ -72,11 +72,11 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `java/web` | `p2p/tests/integration/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
 | `java/web` | `p2p/tests/integration/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` | matches main Dockerfile |
 | `nextjs/web` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
-| `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine |
+| `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `nextjs/web` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
 | `nextjs/web` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
 | `static/nextra` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
-| `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine |
+| `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
 | `python/web` | `skeleton/uv.lock` | locked Python deps | `uv lock` |
 | `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `ghcr.io/astral-sh/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
@@ -101,12 +101,7 @@ for dir in p2p/tests/functional p2p/tests/integration; do
 done
 ```
 
-Update Dockerfiles and Makefile:
-
-- `skeleton/Dockerfile`: `golang:X.Y.Z-alpineA.B` (build stage), `alpine:A.B` (runtime) — match Go version to `go.mod`; use latest Alpine
-- `skeleton/Makefile` (`lint-app`): update `golang:X.Y.Z-alpineA.B` to match the Dockerfile; also update `revive@vX.Y.Z` — check [mgechev/revive releases](https://github.com/mgechev/revive/releases)
-- `p2p/tests/functional/Dockerfile`: update `golang:X.Y.Z-alpineA.B`; update `godog@vX.Y.Z` to match the `godog` version in `functional/go.mod`
-- `p2p/tests/integration/Dockerfile`: update `golang:X.Y.Z-alpineA.B`; update `godog@vX.Y.Z` to match the `godog` version in `integration/go.mod`
+Update all image and version pins from the inventory table. The `godog@vX.Y.Z` pin in each test Dockerfile must match the version resolved into that directory's `go.mod` by the step above.
 
 #### java/web
 
@@ -126,12 +121,6 @@ When upgrading the JDK version (e.g. 21 → 25), also update `sourceCompatibilit
 build image and `eclipse-temurin:NN-jre-noble` runtime image in `skeleton/Dockerfile` and the
 test Dockerfiles to the same JDK version. Gradle 9+ has no alpine variant for JDK 25 — use
 `-noble` (Ubuntu) instead.
-
-Update Dockerfiles:
-
-- `skeleton/Dockerfile`: `gradle:X.Y.Z-jdkNN-noble` (build), `eclipse-temurin:NN-jre-noble` (runtime)
-- `p2p/tests/functional/Dockerfile`: `gradle:X.Y.Z-jdkNN-noble`
-- `p2p/tests/integration/Dockerfile`: `gradle:X.Y.Z-jdkNN-noble`
 
 #### nextjs/web and static/nextra
 
@@ -157,7 +146,8 @@ Match the Playwright image in `p2p/tests/functional/Dockerfile` to the `@playwri
 version in `functional/package.json`.
 
 Update `skeleton/Dockerfile`: `node:X.Y.Z-alpineA.B` — match Node major to `engines` in
-`package.json`; use latest Alpine variant.
+`package.json`; use latest Alpine variant. When changing Node major, also update `@types/node`
+to the same major (e.g. `^26.0.0`) so types stay aligned with the runtime.
 
 #### python/web
 
@@ -190,9 +180,6 @@ for dir in p2p/tests/functional p2p/tests/integration p2p/tests/extended; do
 done
 ```
 
-Update `p2p/tests/{functional,integration,extended}/Dockerfile`: match `golang:X.Y.Z-trixie`
-to the Go version in `go.mod`.
-
 #### NFT tests (all templates)
 
 The NFT Dockerfile builds a custom K6 binary with `xk6-prometheus`.
@@ -201,7 +188,7 @@ Keep these versions consistent across all templates and update them together:
 - Go builder: `golang:X.Y.Z-alpineA.B` — use the **same Go version** as the main `go/web` Dockerfile and use the **latest Alpine variant** (check Docker Hub for the newest `X.Y.Z-alpineA.B` tag)
 - Prometheus (`promtool`): `prom/prometheus:vX.Y.Z` — **do not upgrade to v3.x, not yet supported; keep on latest v2.x**
 - Alpine runtime: `alpine:A.B` — use the **same Alpine version** as the Go builder above
-- `xk6`: `go install go.k6.io/xk6/cmd/xk6@vX.Y.Z` — check [grafana/xk6 releases](https://github.com/grafana/xk6/releases) for the latest tag
+- `xk6`: `go install go.k6.io/xk6@vX.Y.Z` — check [grafana/xk6 releases](https://github.com/grafana/xk6/releases) for the latest tag (root package since v1.0.0, not `cmd/xk6`)
 - `xk6-prometheus`: `xk6 build --with github.com/coreeng/xk6-prometheus@vX.Y.Z` — check [coreeng/xk6-prometheus releases](https://github.com/coreeng/xk6-prometheus/releases) for the latest tag
 
 **Extended tests** — currently placeholders; update the base image to match the template's other test images.
@@ -223,18 +210,63 @@ Because `skeleton/` contains `{{ name }}` placeholders, use a throwaway copy:
 ```bash
 tmpdir=$(mktemp -d)
 cp -r <language>/web/skeleton/. "$tmpdir"
-find "$tmpdir" -type f | xargs sed -i 's/{{ name }}/myapp/g'
+# Substitute all template variables; LC_ALL=C avoids sed failures on binary files
+grep -rl '{{' "$tmpdir" | while IFS= read -r f; do
+  LC_ALL=C sed -i '' \
+    -e 's/{{ name }}/myapp/g' \
+    -e 's/{{ tenant }}/mytenant/g' \
+    -e 's/{{ version_prefix }}//g' \
+    -e 's/{{ working_directory }}//g' \
+    "$f"
+done
 docker build -t myapp-test "$tmpdir"
 ```
 
-Sanity-check both ports:
+Each template exposes different ports and health endpoints:
+
+| Template | Port flags | Sleep | Endpoints (expected response) |
+|---|---|---|---|
+| `go/web`, `python/web` | `-p 8080:8080 -p 8081:8081` | 3s | `:8080/hello` → "Hello world"; `:8081/internal/status`; `:8081/metrics` |
+| `java/web` | `-p 8080:8080 -p 8081:8081` | 8s | `:8080/hello` → "Hello World!"; `:8081/health` → `{"status":"UP"}`; `:8081/prometheus` |
+| `nextjs/web`, `static/nextra` | `-p 3000:3000` | 5s | `:3000/readyz` → "OK"; `:3000/livez` → "OK" |
+| `docker/web` | `-p 9898:9898` | 2s | `:9898/healthz` → `{"status":"OK"}`; `:9898/readyz` → `{"status":"OK"}` |
 
 ```bash
-docker run --rm -p 8080:8080 -p 8081:8081 myapp-test &
-curl -s http://localhost:8080/hello           # must contain "Hello world"
-curl -s http://localhost:8081/internal/status
-curl -s http://localhost:8081/metrics
+docker run --rm <PORT_FLAGS> --name myapp myapp-test &
+sleep <SLEEP>
+# curl each endpoint from the table above
+docker stop myapp
 ```
+
+#### Test container images
+
+The application image smoke test above does not cover the test containers. After updating
+dependencies or images, also build every test container Dockerfile directly from its own
+directory (no template-variable substitution needed — test directories contain no `{{}}`
+placeholders):
+
+```bash
+BASE=<template>/skeleton   # e.g. go/web/skeleton
+docker build -t test-functional  "$BASE/p2p/tests/functional"
+docker build -t test-integration "$BASE/p2p/tests/integration"
+docker build -t test-nft         "$BASE/p2p/tests/nft"
+docker build -t test-extended    "$BASE/p2p/tests/extended"
+docker rmi test-functional test-integration test-nft test-extended
+```
+
+Repeat for every template you changed. Notable caveats:
+
+| Template | Stage | Base image | Notes |
+|---|---|---|---|
+| `java/web` | functional, integration | `gradle:X.Y.Z-jdkNN-noble` | slow on first run (downloads Gradle wrapper + all deps) |
+| `nextjs/web`, `static/nextra` | functional | `mcr.microsoft.com/playwright:vX.Y.Z-noble` | large image (~1.5 GB) |
+| `docker/web` | functional, integration, extended | `golang:X.Y.Z-trixie` | Go-based BDD tests (note `-trixie`, not `-alpine`) |
+| **all** | nft | `golang:X.Y.Z-alpineA.B` | builds custom k6 binary with `xk6-prometheus` |
+
+> **xk6 install path:** for `xk6 >= v1.0.0` the main package moved to the module root —
+> use `go install go.k6.io/xk6@vX.Y.Z`, **not** `go install go.k6.io/xk6/cmd/xk6@vX.Y.Z`.
+> Verify the correct path in the [release notes](https://github.com/grafana/xk6/releases)
+> when doing a major version bump.
 
 ### Adding a new app template
 
