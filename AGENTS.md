@@ -154,6 +154,23 @@ yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
 ```
 
+When updating dependencies, always regenerate the lockfile(s) so transitive dependencies also
+move to the newest versions allowed by your semver ranges (Yarn v1 will otherwise prefer the
+already-pinned versions in `yarn.lock`):
+
+```bash
+# Regenerate the lockfile for the template root.
+rm -f yarn.lock
+yarn install
+
+# Also regenerate the lockfile for the functional test module.
+cd p2p/tests/functional
+rm -f yarn.lock
+yarn install
+```
+
+Keep `yarn.lock` committed; the template Dockerfiles use `yarn --frozen-lockfile`.
+
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
 `{{ name }}` substitution needed; for `static/nextra`, temporarily set parent `package.json`
 `name` to a valid value so `yarn install` can run):
