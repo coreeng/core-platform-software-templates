@@ -154,10 +154,9 @@ yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
 ```
 
-If you are upgrading to pick up a *transitive* security fix (i.e. the vulnerable package is not
-declared directly in `package.json`) and `yarn install` does not move it, remember that Yarn v1
-prefers the versions already pinned in `yarn.lock` as long as they still satisfy the semver range.
-In that case, regenerate the lockfile(s) so the resolver can select the patched version:
+When updating dependencies, always regenerate the lockfile(s) so transitive dependencies also
+move to the newest versions allowed by your semver ranges (Yarn v1 will otherwise prefer the
+already-pinned versions in `yarn.lock`):
 
 ```bash
 # Regenerate the lockfile for the template root.
