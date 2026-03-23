@@ -154,6 +154,24 @@ yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
 ```
 
+If you are upgrading to pick up a *transitive* security fix (i.e. the vulnerable package is not
+declared directly in `package.json`) and `yarn install` does not move it, remember that Yarn v1
+prefers the versions already pinned in `yarn.lock` as long as they still satisfy the semver range.
+In that case, regenerate the lockfile(s) so the resolver can select the patched version:
+
+```bash
+# Regenerate the lockfile for the template root.
+rm -f yarn.lock
+yarn install
+
+# Also regenerate the lockfile for the functional test module.
+cd p2p/tests/functional
+rm -f yarn.lock
+yarn install
+```
+
+Keep `yarn.lock` committed; the template Dockerfiles use `yarn --frozen-lockfile`.
+
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
 `{{ name }}` substitution needed; for `static/nextra`, temporarily set parent `package.json`
 `name` to a valid value so `yarn install` can run):
