@@ -1,4 +1,4 @@
-# Java Web
+# {{ name }
 
 Java application for the Core Platform.
 
