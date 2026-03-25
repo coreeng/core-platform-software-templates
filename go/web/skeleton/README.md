@@ -1,4 +1,4 @@
-# Go Web
+# {{ name }
 
 Go application for the Core Platform.
 
