@@ -1,4 +1,4 @@
-# {{ name }
+# {{ name }}
 
 Next.js application for the Core Platform.
 

@@ -1,4 +1,4 @@
-# {{ name }
+# {{ name }}
 
 Nextra docs application for the Core Platform.
 
