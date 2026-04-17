@@ -390,7 +390,7 @@ Use the same Alpine version as the rest of the template (check the current versi
 `p2p/tests/nft/Dockerfile`):
 
 ```dockerfile
-FROM docker.io/alpine:3.23
+FROM docker.io/alpine:3.23.4
 ENTRYPOINT ["echo"]
 CMD ["### extended tests not implemented ###"]
 ```
