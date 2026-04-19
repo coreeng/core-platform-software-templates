@@ -17,6 +17,7 @@ jobs:
       slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
     with:
       image-name: {{ name }}
+      tenant-name: {{ tenant }}
 
   prod:
     needs: [get-latest-version]
