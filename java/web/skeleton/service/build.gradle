@@ -26,9 +26,9 @@ dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-jetty')
 	implementation('org.springframework.boot:spring-boot-starter-actuator')
 	implementation('io.micrometer:micrometer-registry-prometheus')
-	implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3')
-	implementation('com.google.guava:guava:33.6.0-jre')
-	implementation('com.zaxxer:HikariCP:7.0.2')
+	implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6')
+	implementation('com.google.guava:guava:33.4.8-jre')
+	implementation('com.zaxxer:HikariCP:6.3.0')
 
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
