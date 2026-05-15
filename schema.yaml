@@ -15,3 +15,8 @@ config:
     limits:
       cpu: str()
       memory: str()
+  autoscaling:
+    enabled: bool()
+    minReplicas: int(min=1)
+    maxReplicas: int(min=1)
+    targetCPUUtilizationPercentage: int(min=1, max=100)

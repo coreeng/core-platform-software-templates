@@ -9,3 +9,8 @@ config:
     limits:
       cpu: 250m
       memory: 512Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
