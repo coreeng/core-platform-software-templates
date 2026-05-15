@@ -349,6 +349,7 @@ config:
 | `.github/workflows/extended-test.yaml` | |
 | `.github/workflows/prod.yaml` | |
 | `p2p/scripts/helm-test.sh` | |
+| `p2p/config/.yamllint` | Allows generated env variable names in config values |
 | `p2p/tests/nft/Dockerfile` | Do not update versions independently of other templates |
 | `p2p/tests/nft/resources/load-testing/hello.js` | |
 | `p2p/tests/nft/resources/load-testing/validate.sh` | |
@@ -448,7 +449,7 @@ Each contains:
 - `skeleton/Dockerfile` — OpenTofu runner container (the "app" that applies infrastructure)
 - `skeleton/Makefile` — `p2p-build` and `deploy-*` targets; no BDD/NFT/integration test targets
 - `skeleton/.github/workflows/` — `fast-feedback.yaml`, `prod.yaml`
-- `skeleton/p2p/config/` — per-environment config (`common.yaml` + per-stage overrides)
+- `skeleton/p2p/config/` — per-environment config (`common.yaml`, per-stage overrides, `.yamllint`)
 - `skeleton/infrastructure/code/` — OpenTofu modules and Terragrunt configuration
   - `versions.tf` — OpenTofu version constraint and provider versions
   - `.terraform.lock.hcl` — provider lock file (equivalent to `go.sum`); always committed
