@@ -1,4 +1,4 @@
 # {{ name }}
 
-Infrastructure provisioning application for Core Platform
 
+Infrastructure provisioning application for Core Platform

@@ -1,5 +1,6 @@
 # {{ name }}
 
+
 Java web application for Core Platform
 
 # Parameters
@@ -204,4 +205,3 @@ betaFeatures:
 When running load tests it is important that we define CPU resource limits. This will allow us to have stable results between runs.
 
 If we don't apply the limits then the performance of the Pods will depend on the CPU utilization of the node that is running the container.
-
