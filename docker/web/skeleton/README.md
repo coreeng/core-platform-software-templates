@@ -1,5 +1,6 @@
 # {{ name }}
 
+
 Docker web application for Core Platform
 
 # Parameters
@@ -137,4 +138,3 @@ Extended Test are using [Cucumber Godog](https://github.com/cucumber/godog)
 
 This namespace is used to test that the individual parts of the system as well as service-to-service communication
 of the app works correctly against real dependencies. Currently, using BDD (Behaviour driven development)
-
