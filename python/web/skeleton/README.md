@@ -1,6 +1,5 @@
 # {{ name }}
 
-
 Python web application for Core Platform
 
 ## Overview
