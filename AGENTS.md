@@ -328,7 +328,12 @@ config:
     enabled: true
     minReplicas: 2
     maxReplicas: 8
-    targetCPUUtilizationPercentage: 70
+    targetCPUUtilizationPercentage: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 250m      # use 1000m for JVM-based languages
@@ -369,6 +374,7 @@ Copy from `go/web/skeleton/p2p/config/common.yaml`. The ports are correct for al
 Autoscaling is configured in `common.yaml` from template config values. Keep autoscaling
 disabled in stages that run post-test scale-down cleanup (`functional`, `nft`, and
 `extended-test`) by setting `autoscaling.enabled: false` in those stage override files.
+Default HPA behavior stabilizes scale-up for 30 seconds and scale-down for 300 seconds.
 
 #### 5. Implement the two-port application
 

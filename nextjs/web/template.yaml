@@ -9,7 +9,12 @@ config:
     enabled: true
     minReplicas: 2
     maxReplicas: 8
-    targetCPUUtilizationPercentage: 70
+    targetCPUUtilizationPercentage: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 1000m
