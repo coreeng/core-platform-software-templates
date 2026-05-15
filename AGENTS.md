@@ -324,15 +324,15 @@ kind: app
 skeletonPath: ./skeleton
 config:
   replicas: 2
-  resources:
-    limits:
-      cpu: 250m      # use 1000m for JVM-based languages
-      memory: 512Mi  # use 1024Mi for JVM-based languages
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 8
     targetCPUUtilizationPercentage: 70
+  resources:
+    limits:
+      cpu: 250m      # use 1000m for JVM-based languages
+      memory: 512Mi  # use 1024Mi for JVM-based languages
 ```
 
 #### 2. Copy shared files verbatim from `go/web/skeleton`

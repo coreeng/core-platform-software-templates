@@ -5,12 +5,12 @@ kind: app
 skeletonPath: ./skeleton
 config:
   replicas: 2
-  resources:
-    limits:
-      cpu: 1000m
-      memory: 1024Mi
   autoscaling:
     enabled: true
     minReplicas: 2
     maxReplicas: 8
     targetCPUUtilizationPercentage: 70
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi

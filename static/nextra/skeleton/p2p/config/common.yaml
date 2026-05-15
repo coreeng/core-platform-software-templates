@@ -1,6 +1,12 @@
 ---
 replicaCount: ${p2p_app_config_replicas}
 
+autoscaling:
+  enabled: ${p2p_app_config_autoscaling_enabled}
+  minReplicas: ${p2p_app_config_autoscaling_minReplicas}
+  maxReplicas: ${p2p_app_config_autoscaling_maxReplicas}
+  targetCPUUtilizationPercentage: ${p2p_app_config_autoscaling_targetCPUUtilizationPercentage}
+
 resources:
   requests:
     cpu: ${p2p_app_config_resources_limits_cpu}
@@ -8,12 +14,6 @@ resources:
   limits:
     cpu: ${p2p_app_config_resources_limits_cpu}
     memory: ${p2p_app_config_resources_limits_memory}
-
-autoscaling:
-  enabled: ${p2p_app_config_autoscaling_enabled}
-  minReplicas: ${p2p_app_config_autoscaling_minReplicas}
-  maxReplicas: ${p2p_app_config_autoscaling_maxReplicas}
-  targetCPUUtilizationPercentage: ${p2p_app_config_autoscaling_targetCPUUtilizationPercentage}
 
 startupProbe:
   failureThreshold: 30
