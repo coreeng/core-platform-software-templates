@@ -33,7 +33,7 @@ substituted:
 
 App templates (`kind: app`) deploy containerised web services. Each contains:
 
-- `template.yaml` — `kind: app`, replica count, CPU/memory limits
+- `template.yaml` — `kind: app`, replica count, CPU/memory limits, autoscaling defaults
 - `skeleton/Makefile` — P2P targets: `p2p-build`, `p2p-functional`, `p2p-nft`, `p2p-integration`, `p2p-extended-test`, `p2p-prod`
 - `skeleton/.github/workflows/` — `fast-feedback.yaml`, `extended-test.yaml`, `prod.yaml`
 - `skeleton/p2p/config/` — Helm config per P2P stage (`common.yaml` + per-stage overrides)
@@ -324,6 +324,16 @@ kind: app
 skeletonPath: ./skeleton
 config:
   replicas: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 250m      # use 1000m for JVM-based languages
@@ -342,10 +352,10 @@ config:
 | `p2p/tests/nft/Dockerfile` | Do not update versions independently of other templates |
 | `p2p/tests/nft/resources/load-testing/hello.js` | |
 | `p2p/tests/nft/resources/load-testing/validate.sh` | |
-| `p2p/config/functional.yaml` | Empty |
+| `p2p/config/functional.yaml` | Disable autoscaling for cleanup stages |
 | `p2p/config/integration.yaml` | Empty |
-| `p2p/config/nft.yaml` | Empty |
-| `p2p/config/extended-test.yaml` | Empty |
+| `p2p/config/nft.yaml` | Disable autoscaling for cleanup stages |
+| `p2p/config/extended-test.yaml` | Disable autoscaling for cleanup stages |
 | `p2p/config/prod.yaml` | Empty |
 
 #### 3. Adapt the Makefile
@@ -360,6 +370,11 @@ Copy from `go/web/skeleton/p2p/config/common.yaml`. The ports are correct for al
 - Liveness probe: port 8081, path `/internal/status`
 - Readiness probe: port 8080, path `/hello`
 - Metrics scraping: port 8081
+
+Autoscaling is configured in `common.yaml` from template config values. Keep autoscaling
+disabled in stages that run post-test scale-down cleanup (`functional`, `nft`, and
+`extended-test`) by setting `autoscaling.enabled: false` in those stage override files.
+Default HPA behavior stabilizes scale-up for 30 seconds and scale-down for 300 seconds.
 
 #### 5. Implement the two-port application
 

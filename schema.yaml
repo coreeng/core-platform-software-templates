@@ -11,6 +11,16 @@ config: include('config', required=False)
 # Config schema
 config:
   replicas: int(min=0)
+  autoscaling:
+    enabled: bool()
+    minReplicas: int(min=1)
+    maxReplicas: int(min=1)
+    targetCPUUtilizationPercentage: int(min=1, max=100)
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: int(min=0)
+      scaleDown:
+        stabilizationWindowSeconds: int(min=0)
   resources:
     limits:
       cpu: str()

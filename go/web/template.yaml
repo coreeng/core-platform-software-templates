@@ -5,6 +5,16 @@ kind: app
 skeletonPath: ./skeleton
 config:
   replicas: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 250m
