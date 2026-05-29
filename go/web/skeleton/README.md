@@ -1,5 +1,5 @@
 # {{ name }}
- 
+
 Go web application for Core Platform
 
 # Parameters
