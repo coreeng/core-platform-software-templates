@@ -16,9 +16,9 @@ config:
       scaleDown:
         stabilizationWindowSeconds: 300
   resources:
-    limits:
+    requests:
       cpu: 250m
       memory: 512Mi
-    requests:
+    limits:
       cpu: 250m
       memory: 512Mi

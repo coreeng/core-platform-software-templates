@@ -335,10 +335,10 @@ config:
       scaleDown:
         stabilizationWindowSeconds: 300
   resources:
-    limits:
+    requests:
       cpu: 250m      # use 1000m for JVM-based languages
       memory: 512Mi  # use 1024Mi for JVM-based languages
-    requests:
+    limits:
       cpu: 250m      # use 1000m for JVM-based languages
       memory: 512Mi  # use 1024Mi for JVM-based languages
 ```
