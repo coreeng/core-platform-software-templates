@@ -1,5 +1,5 @@
 # {{ name }}
-
+ 
 Python web application for Core Platform
 
 ## Overview
@@ -120,4 +120,3 @@ A Grafana dashboard is available via the internal services domain once the app i
 ### K6 Operator
 
 The NFT and Extended test stages use the K6 Operator on the cluster. The custom K6 build includes the [xk6-prometheus](https://github.com/coreeng/xk6-prometheus) extension so metrics are exported to Prometheus during load tests.
-
