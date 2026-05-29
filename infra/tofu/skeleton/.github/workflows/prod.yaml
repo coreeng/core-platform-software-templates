@@ -30,6 +30,7 @@ jobs:
       tenant-name: {{ tenant }}
       version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
       version-prefix: {{ version_prefix }}
+      skip-subnamespaces-create: true
 {%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
 {%- endif %}
