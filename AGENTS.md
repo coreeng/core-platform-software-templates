@@ -33,7 +33,7 @@ substituted:
 
 App templates (`kind: app`) deploy containerised web services. Each contains:
 
-- `template.yaml` — `kind: app`, replica count, CPU/memory limits, autoscaling defaults
+- `template.yaml` — `kind: app`, replica count, CPU/memory requests and limits, autoscaling defaults
 - `skeleton/Makefile` — P2P targets: `p2p-build`, `p2p-functional`, `p2p-nft`, `p2p-integration`, `p2p-extended-test`, `p2p-prod`
 - `skeleton/.github/workflows/` — `fast-feedback.yaml`, `extended-test.yaml`, `prod.yaml`
 - `skeleton/p2p/config/` — Helm config per P2P stage (`common.yaml` + per-stage overrides)
@@ -335,6 +335,9 @@ config:
       scaleDown:
         stabilizationWindowSeconds: 300
   resources:
+    requests:
+      cpu: 250m      # use 1000m for JVM-based languages
+      memory: 512Mi  # use 1024Mi for JVM-based languages
     limits:
       cpu: 250m      # use 1000m for JVM-based languages
       memory: 512Mi  # use 1024Mi for JVM-based languages

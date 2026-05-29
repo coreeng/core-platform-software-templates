@@ -22,6 +22,9 @@ config:
       scaleDown:
         stabilizationWindowSeconds: int(min=0)
   resources:
+    requests:
+      cpu: str()
+      memory: str()
     limits:
       cpu: str()
       memory: str()
