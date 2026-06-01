@@ -4,11 +4,11 @@ description: Go web application
 kind: app
 skeletonPath: ./skeleton
 config:
-  replicas: 2
+  replicas: 3
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 8
+    minReplicas: 3
+    maxReplicas: 9
     targetCPUUtilizationPercentage: 80
     behavior:
       scaleUp:
@@ -17,7 +17,7 @@ config:
         stabilizationWindowSeconds: 300
   resources:
     requests:
-      cpu: 250m
+      cpu: 50m
       memory: 512Mi
     limits:
       cpu: 250m

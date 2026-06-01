@@ -323,11 +323,11 @@ description: <Language> web application
 kind: app
 skeletonPath: ./skeleton
 config:
-  replicas: 2
+  replicas: 3
   autoscaling:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 8
+    minReplicas: 3
+    maxReplicas: 9
     targetCPUUtilizationPercentage: 80
     behavior:
       scaleUp:
@@ -336,7 +336,7 @@ config:
         stabilizationWindowSeconds: 300
   resources:
     requests:
-      cpu: 250m      # use 1000m for JVM-based languages
+      cpu: 50m
       memory: 512Mi  # use 1024Mi for JVM-based languages
     limits:
       cpu: 250m      # use 1000m for JVM-based languages
@@ -394,8 +394,9 @@ publicly. The `/hello` endpoint must return a body containing `"Hello world"` �
 the K6 NFT script asserts.
 
 Use the framework's lightest available Prometheus metrics library. Avoid per-request
-middleware with significant overhead (e.g. full OpenTelemetry tracing instrumentation) —
-the NFT test targets 1000 req/s at 2 replicas × 250m CPU with p(99) < 2000ms.
+middleware with significant overhead (e.g. full OpenTelemetry tracing instrumentation).
+NFT load-test capacity depends on the generated app's resource settings; tune the NFT
+stage or test target per template rather than relying on a fixed CPU-per-replica assumption.
 
 #### 6. Implement functional and integration BDD tests
 
