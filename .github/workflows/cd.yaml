@@ -10,10 +10,13 @@ on:
 jobs:
   validate:
     name: Validate
+    permissions:
+      contents: read
     uses: ./.github/workflows/validate.yaml
 
   trigger-rendering:
     name: Trigger Rendering
+    permissions: {}
     runs-on: ubuntu-24.04
     steps:
       - name: Trigger Rendering

@@ -9,4 +9,6 @@ on:
 jobs:
   validate:
     name: Validate
+    permissions:
+      contents: read
     uses: ./.github/workflows/validate.yaml
