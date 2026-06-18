@@ -1,6 +1,5 @@
 # {{ name }}
 
-
 Nextra docs application for Core Platform
 
 # Parameters
