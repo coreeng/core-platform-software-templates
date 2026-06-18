@@ -3,6 +3,9 @@ name: Validate
 
 on: workflow_call
 
+permissions:
+  contents: read
+
 jobs:
   templates:
     runs-on: ubuntu-24.04
