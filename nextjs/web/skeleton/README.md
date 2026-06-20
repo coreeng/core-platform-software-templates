@@ -1,6 +1,5 @@
 # {{ name }}
 
-
 Next.js web application for Core Platform
 
 # Parameters
