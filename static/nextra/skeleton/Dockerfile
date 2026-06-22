@@ -25,6 +25,10 @@ RUN yarn run test && yarn run build
 FROM base AS runner
 WORKDIR /app
 
+# hadolint ignore=DL3018
+RUN apk upgrade --no-cache libcrypto3 libssl3 \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
