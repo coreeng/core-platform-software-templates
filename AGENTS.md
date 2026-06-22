@@ -171,6 +171,13 @@ yarn install
 
 Keep `yarn.lock` committed; the template Dockerfiles use `yarn --frozen-lockfile`.
 
+> **Known Nextra issue:** Do not upgrade `static/nextra` from `nextra`/`nextra-theme-docs`
+> `4.6.0` to `4.6.1` unless the upstream issue is fixed or you have a template code fix.
+> The upgrade has been tested and causes `next build` to fail while prerendering
+> `/_not-found` with digest `1872370934`, including when adding an explicit plain
+> `src/app/not-found.tsx`. Keep `static/nextra` on `4.6.0` until a smoke test proves a
+> newer version builds successfully.
+
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
 `{{ name }}` substitution needed; for `static/nextra`, temporarily set parent `package.json`
 `name` to a valid value so `yarn install` can run):
