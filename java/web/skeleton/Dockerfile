@@ -9,16 +9,15 @@ RUN gradle service:build --no-daemon
 FROM eclipse-temurin:25-jre-noble
 WORKDIR /
 
-# hadolint ignore=DL3008
 RUN apt-get update \
  && apt-get install --no-install-recommends -y \
-  libgcrypt20 \
-  libgnutls30t64 \
-  liblzma5 \
-  libssl3t64 \
-  libsystemd0 \
-  libudev1 \
-  openssl \
+  libgcrypt20=1.10.3-2ubuntu0.1 \
+  libgnutls30t64=3.8.3-1.1ubuntu3.6 \
+  liblzma5=5.6.1+really5.4.5-1ubuntu0.3 \
+  libssl3t64=3.0.13-0ubuntu3.11 \
+  libsystemd0=255.4-1ubuntu8.16 \
+  libudev1=255.4-1ubuntu8.16 \
+  openssl=3.0.13-0ubuntu3.11 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 

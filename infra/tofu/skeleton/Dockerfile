@@ -49,8 +49,7 @@ COPY infrastructure/ ./
 RUN tofu fmt -check -diff -recursive && terragrunt hcl fmt --check
 
 # Cache terraform providers, and persist cache in the image
-RUN --mount=type=cache,target=/var/tmp/terraform rm -rf /var/tmp/terraform/* \
- && TF_PLUGIN_CACHE_DIR=/var/tmp/terraform ENV=cache make infra-init-cache \
+RUN --mount=type=cache,target=/var/tmp/terraform TF_PLUGIN_CACHE_DIR=/var/tmp/terraform ENV=cache make infra-init-cache \
  && cp -R /var/tmp/terraform /var/cache/terraform
 ENV TF_PLUGIN_CACHE_DIR=/var/cache/terraform
 ENV CHECKPOINT_DISABLE=true
