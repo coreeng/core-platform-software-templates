@@ -82,7 +82,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `static/nextra` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
 | `python/web` | `skeleton/uv.lock` | locked Python deps | `uv lock` |
-| `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `ghcr.io/astral-sh/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
+| `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `docker.io/astral/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
 | `python/web` | `p2p/tests/functional/Dockerfile` | `python:X.Y-slim`, `behave`, `requests` | match main Dockerfile; pin behave/requests |
 | `python/web` | `p2p/tests/integration/Dockerfile` | `python:X.Y-slim`, `behave`, `requests` | match main Dockerfile; pin behave/requests |
 | `docker/web` | `skeleton/Dockerfile` | `stefanprodan/podinfo:X.Y.Z` | [podinfo releases](https://github.com/stefanprodan/podinfo/releases) |
@@ -205,7 +205,7 @@ sed -i 's/name = "app"/name = "{{ name }}"/' pyproject.toml
 sed -i '/source = { editable = "\." }/{x;s/name = "app"/name = "{{ name }}"/;x}' uv.lock
 ```
 
-Update `skeleton/Dockerfile`: `python:X.Y-slim` (both stages), `ghcr.io/astral-sh/uv:X.Y.Z` —
+Update `skeleton/Dockerfile`: `python:X.Y-slim` (both stages), `docker.io/astral/uv:X.Y.Z` —
 match to `requires-python` in `pyproject.toml`.
 
 Also update `behave` and `requests` versions in the functional/integration test Dockerfile
