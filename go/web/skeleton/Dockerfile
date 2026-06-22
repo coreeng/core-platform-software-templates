@@ -6,10 +6,7 @@ COPY go.sum /app
 
 RUN go build -o service /app/cmd/service/main.go
 
-FROM docker.io/alpine:3.23.4
-
-# hadolint ignore=DL3018
-RUN apk upgrade --no-cache libcrypto3 libssl3
+FROM docker.io/alpine:3.24.1
 
 WORKDIR /app
 COPY --from=build /app/service ./
