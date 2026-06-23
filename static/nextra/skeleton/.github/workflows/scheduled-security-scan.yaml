@@ -16,6 +16,7 @@ jobs:
     secrets:
       env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
     with:
+      app-name: {{ name }}
       tenant-name: {{ tenant }}
       security-scan-blocking-severity: "off"
 {%- if working_directory is defined and working_directory %}
