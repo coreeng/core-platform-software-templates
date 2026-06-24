@@ -1,0 +1,6 @@
+---
+prometheus:
+  targetNamespaces:
+    - {{ name }}-prod
+  targetInstances:
+    - {{ name }}
