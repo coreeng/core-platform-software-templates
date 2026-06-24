@@ -19,20 +19,17 @@ make p2p-prod
 
 ## Monitoring Targets
 
-This template does not define custom software-template parameters. The generated Helm values target
-the monitoring delivery unit itself:
+The generated Helm values monitor this delivery unit by default:
 
 - non-production stages: `{{ name }}-integration`
 - production: `{{ name }}-prod`
 - target instance: `{{ name }}`
 
-If additional monitoring targets are needed later, add them in the generated repository values files
-after rendering the template. This infra template does not add dashboard or template-rendering
-behavior.
+To monitor additional delivery units, edit the environment values files and add each delivery unit's
+namespace under `prometheus.targetNamespaces` and instance name under `prometheus.targetInstances`.
 
-To monitor additional delivery units, edit each environment values file and add the delivery unit's
-namespace and instance. For example, to monitor `payments-api` and `orders-api` in integration,
-update `p2p/config/integration.yaml`:
+For example, to monitor `payments-api` and `orders-api` in integration, update
+`p2p/config/integration.yaml`:
 
 ```yaml
 prometheus:
