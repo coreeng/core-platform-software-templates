@@ -1,0 +1,5 @@
+---
+name: infra-kafka
+description: Infra Kafka application
+kind: infra
+skeletonPath: ./skeleton
