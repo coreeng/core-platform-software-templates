@@ -16,6 +16,12 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom 'com.fasterxml.jackson:jackson-bom:2.22.0'
+	}
+}
+
 configurations {
 	implementations.exclude module: "spring-boot-starter-tomcat"
 }
