@@ -1,0 +1,47 @@
+---
+name: {{ name }} Fast Feedback
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
+  pull_request:
+    branches:
+      - main
+{%- if working_directory is defined and working_directory %}
+    paths:
+      - {{ working_directory }}/**
+{%- endif %}
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  version:
+    uses: coreeng/p2p/.github/workflows/p2p-version.yaml@v1
+    with:
+      version-prefix: {{ version_prefix }}
+    secrets:
+      git-token: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+      slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
+  fastfeedback:
+    needs: [version]
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
+    secrets:
+      slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
+      env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
+    with:
+      app-name: {{ name }}
+      tenant-name: {{ tenant }}
+      version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
+      skip-subnamespaces-create: true
+{%- if working_directory is defined and working_directory %}
+      working-directory: {{ working_directory }}
+{%- endif %}

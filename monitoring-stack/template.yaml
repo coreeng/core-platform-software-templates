@@ -1,0 +1,5 @@
+---
+name: monitoring-stack
+description: Shared Prometheus, Grafana, and Alertmanager monitoring stack
+kind: infra
+skeletonPath: ./skeleton
