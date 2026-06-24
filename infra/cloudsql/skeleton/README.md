@@ -8,17 +8,19 @@ This repository is generated with the Cloud SQL template, but the template canno
 
 Collect these values before enabling the pipeline:
 
-| Field | Integration | Prod |
+| Field | Value to collect | Differs by stage? |
 |---|---|---|
-| Infra project ID | GCP project where integration Cloud SQL resources and Terraform state are created | GCP project where production Cloud SQL resources and Terraform state are created |
-| Platform project ID | Core Platform project for the integration environment that consumes the database | Core Platform project for the production environment that consumes the database |
-| Region | GCP region for Cloud SQL and Terraform state, for example `europe-west2` | Same region unless production needs a different location |
-| DB cluster name | Cloud SQL instance base name | Usually the same value as integration |
-| DB name | PostgreSQL database name, usually named after the application tenant that will use it | Usually the same value as integration |
-| App service account email | Cloud access GCP service account for the application tenant in the integration platform project | Cloud access GCP service account for the application tenant in the production platform project |
-| Alert email groups | Email group or groups for Cloud SQL alert notifications | Email group or groups for Cloud SQL alert notifications |
-| DB tier | Instance tier, for example `db-g1-small` for a small starting footprint | `db-g1-small` for a small starting footprint, or a larger tier if production load requires it |
-| PostgreSQL version | PostgreSQL version, for example `POSTGRES_18` | Usually the same value as integration |
+| Integration infra project ID | GCP project where integration Cloud SQL resources and Terraform state are created | Yes. Set in integration-like stage files. |
+| Integration platform project ID | Core Platform project for the integration environment that consumes the database | Yes. Set in integration-like stage files. |
+| Prod infra project ID | GCP project where production Cloud SQL resources and Terraform state are created | Yes. Set in `prod.yaml`. |
+| Prod platform project ID | Core Platform project for the production environment that consumes the database | Yes. Set in `prod.yaml`. |
+| Region | GCP region for Cloud SQL and Terraform state, for example `europe-west2` | Usually no. Set once in `common.yaml` unless prod needs a different location. |
+| DB cluster name | Cloud SQL instance base name | Usually no. Use the same cluster name in each stage unless isolation requirements differ. |
+| DB name | PostgreSQL database name, usually named after the application tenant that will use it | Usually no. Use the same database name in each stage. |
+| App service account email | Cloud access GCP service account for the application tenant that connects to the database | Yes. The platform project part normally differs between integration and prod. |
+| Alert email groups | Email group or groups for Cloud SQL alert notifications | Usually no. Use the same group unless production alerts need a separate audience. |
+| DB tier | Instance tier, for example `db-g1-small` for a small starting footprint | Sometimes. Prod may need a larger tier than integration. |
+| PostgreSQL version | PostgreSQL version, for example `POSTGRES_18` | Usually no. Keep integration and prod on the same version unless testing an upgrade. |
 
 ## Platform Project IDs vs Infra Project IDs
 
