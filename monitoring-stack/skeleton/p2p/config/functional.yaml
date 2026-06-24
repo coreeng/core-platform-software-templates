@@ -1,6 +1,0 @@
----
-prometheus:
-  targetNamespaces:
-    - {{ name }}-integration
-  targetInstances:
-    - {{ name }}
