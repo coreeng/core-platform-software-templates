@@ -1,0 +1,36 @@
+---
+name: {{ name }} Extended Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 22 * * *"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  get-latest-version:
+    uses: coreeng/p2p/.github/workflows/p2p-get-latest-image-extended-test.yaml@v1
+    secrets:
+      slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
+    with:
+      image-name: {{ name }}
+      tenant-name: {{ tenant }}
+
+  extendedtests:
+    needs: [get-latest-version]
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-extended-test.yaml@v1
+    secrets:
+      slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
+      env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
+    with:
+      app-name: {{ name }}
+      tenant-name: {{ tenant }}
+      version: {% raw %}${{ needs.get-latest-version.outputs.version }}{% endraw %}
+      version-prefix: {{ version_prefix }}
+      skip-subnamespaces-create: true
+{%- if working_directory is defined and working_directory %}
+      working-directory: {{ working_directory }}
+{%- endif %}
