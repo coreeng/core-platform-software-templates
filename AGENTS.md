@@ -279,7 +279,7 @@ Each template exposes different ports and health endpoints:
 |---|---|---|---|
 | `go/web`, `python/web` | `-p 8080:8080 -p 8081:8081` | 3s | `:8080/hello` → "Hello world"; `:8081/internal/status`; `:8081/metrics` |
 | `java/web` | `-p 8080:8080 -p 8081:8081` | 8s | `:8080/hello` → "Hello World!"; `:8081/health` → `{"status":"UP"}`; `:8081/prometheus` |
-| `nextjs/web`, `static/nextra` | `-p 3000:3000` | 5s | `:3000/readyz` → "OK"; `:3000/livez` → "OK" |
+| `nextjs/web`, `static/nextra` | `-p 3000:3000 -p 8081:8081` | 5s | `:3000/readyz` → "OK"; `:3000/livez` → "OK"; `:8081/metrics` (Prometheus exposition) |
 | `docker/web` | `-p 9898:9898` | 2s | `:9898/healthz` → `{"status":"OK"}`; `:9898/readyz` → `{"status":"OK"}` |
 
 ```bash
