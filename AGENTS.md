@@ -12,6 +12,7 @@
 ├── static/nextra   — Nextra static documentation site
 └── infra/
     ├── cloudsql    — Cloud SQL infrastructure (OpenTofu)
+    ├── kafka       — GCP Managed Service for Apache Kafka infrastructure (OpenTofu)
     ├── tofu        — Generic OpenTofu infrastructure
     └── urlrouter   — URL router infrastructure
 ```
