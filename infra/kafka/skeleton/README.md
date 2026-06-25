@@ -45,9 +45,46 @@ client_principals: serviceAccount:<service-account-email>
 Kafka ACL principal: User:<service-account-email>
 ```
 
-## Temporary Sample Configuration
+## Configure Common Values
 
-The generated template currently includes a sample `kafka` block in `p2p/config/common.yaml` for testing. Replace it with real values before provisioning.
+Set values shared by all stages in `p2p/config/common.yaml`:
+
+```yaml
+---
+region: europe-west2
+
+kafka:
+  enabled: true
+  clusters:
+    - name: my-app
+      vcpu_count: 3
+      memory_bytes: 3221225472
+      connected_subnets:
+        - project_id: core-platform-dev
+          subnet: projects/core-platform-dev/regions/europe-west2/subnetworks/gke-workloads
+          grant_service_agent_role: true
+      client_principals:
+        - serviceAccount:my-app-ca@core-platform-dev.iam.gserviceaccount.com
+      topics:
+        - name: events
+          partition_count: 3
+          replication_factor: 3
+          configs:
+            cleanup.policy: delete
+      acls:
+        - id: topic/events
+          entries:
+            - principal: User:my-app-ca@core-platform-dev.iam.gserviceaccount.com
+              operation: ALL
+              permission_type: ALLOW
+              host: "*"
+        - id: consumerGroup/my-app
+          entries:
+            - principal: User:my-app-ca@core-platform-dev.iam.gserviceaccount.com
+              operation: ALL
+              permission_type: ALLOW
+              host: "*"
+```
 
 ## Configure Stage Projects
 
