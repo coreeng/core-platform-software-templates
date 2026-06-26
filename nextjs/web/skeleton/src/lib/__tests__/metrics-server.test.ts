@@ -52,4 +52,18 @@ describe("metrics server", () => {
       server.close();
     }
   });
+
+  it("exits the process when the port cannot be bound", async () => {
+    const blocker = startMetricsServer(0);
+    const port = await listen(blocker);
+    const exitSpy = jest
+      .spyOn(process, "exit")
+      .mockImplementation(() => undefined as never);
+    await new Promise<void>((resolve) => {
+      startMetricsServer(port).on("error", () => resolve());
+    });
+    expect(exitSpy).toHaveBeenCalledWith(1);
+    exitSpy.mockRestore();
+    blocker.close();
+  });
 });

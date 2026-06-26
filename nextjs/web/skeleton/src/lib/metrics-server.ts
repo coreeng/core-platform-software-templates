@@ -17,7 +17,8 @@ export function startMetricsServer(port: number): Server {
       });
   });
   server.on("error", (err) => {
-    console.error("metrics server error:", err);
+    console.error("metrics server failed to start:", err);
+    process.exit(1);
   });
   server.listen(port, "0.0.0.0");
   return server;
