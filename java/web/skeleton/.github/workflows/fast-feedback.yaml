@@ -41,7 +41,6 @@ jobs:
       app-name: {{ name }}
       tenant-name: {{ tenant }}
       version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}
-      skip-fastfeedback-integration-on-prs: true
 {%- if working_directory is defined and working_directory %}
       working-directory: {{ working_directory }}
 {%- endif %}
