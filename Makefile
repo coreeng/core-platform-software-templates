@@ -33,3 +33,4 @@ templates-validate:
 		echo "Template validation tests passed" ; \
 	fi ; \
 	exit "$${ERRVAL}"
+	@bash tests/template_docs_test.sh
