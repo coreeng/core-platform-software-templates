@@ -42,7 +42,7 @@ The module creates:
 |-----------|------|---------|-------------|
 | `enabled` | `bool` | (required) | Whether to create Cloud SQL resources |
 | `psa_enabled` | `bool` | `false` | Whether to attach instances to the dedicated Private Service Access VPC |
-| `manage_psa_resources` | `bool` | `cloudsql.psa_enabled` | Whether Terraform should create/manage the dedicated Private Service Access VPC, reserved range, and service networking connection. Set to `false` only for transitional environments where Cloud SQL must keep its existing `private_network` metadata but the PSA VPC is intentionally unmanaged. |
+| `manage_psa_resources` | `bool` | `cloudsql.psa_enabled` | Whether this module should create/manage the dedicated Private Service Access VPC, reserved range, and service networking connection. Set to `false` when attaching instances to an existing PSA VPC managed elsewhere, for example when multiple infra apps share one PSA setup in the same project. |
 | `psc_enabled` | `bool` | `false` | Whether to enable Cloud SQL producer-side Private Service Connect settings for the platform project |
 | `allowed_ip_ranges` | `list(map(string))` | `[]` | List of authorized networks for public IP access. Each entry should have `name` and `value` (CIDR) |
 
@@ -174,7 +174,7 @@ When `cloudsql.psa_enabled` is true and `cloudsql.manage_psa_resources` is not f
 - A dedicated VPC network: `cloudsql-{environment}-psa`
 - Private Service Access connection with address `10.220.0.0/16`
 
-When `cloudsql.psa_enabled` is true and `cloudsql.manage_psa_resources` is false, the module keeps Cloud SQL `private_network` set to the expected PSA VPC URI but does not create, read, or manage the PSA VPC resources. This is intended only for transitional cleanup of existing environments where removing `private_network` would force Cloud SQL replacement.
+When `cloudsql.psa_enabled` is true and `cloudsql.manage_psa_resources` is false, the module attaches Cloud SQL to the expected PSA VPC URI but does not create, read, or manage the PSA VPC resources. Use this when the PSA VPC and private service access connection are provided by another infra app or shared project setup.
 
 ### Private Service Connect (PSC)
 
