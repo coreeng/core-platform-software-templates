@@ -158,11 +158,11 @@ sed -i 's/"name": "{{ name }}"/"name": "app"/' package.json
 npx npm-check-updates -u
 yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
+# nextjs/web uses Yarn 4, so restore app@workspace:. to {{ name }}@workspace:. in yarn.lock too.
 ```
 
 When updating dependencies, always regenerate the lockfile(s) so transitive dependencies also
-move to the newest versions allowed by your semver ranges (Yarn v1 will otherwise prefer the
-already-pinned versions in `yarn.lock`):
+move to the newest versions allowed by your semver ranges:
 
 ```bash
 # Regenerate the lockfile for the template root.
@@ -175,7 +175,8 @@ rm -f yarn.lock
 yarn install
 ```
 
-Keep `yarn.lock` committed; the template Dockerfiles use `yarn --frozen-lockfile`.
+Keep `yarn.lock` committed. `nextjs/web` uses Yarn 4 immutable installs; `static/nextra`
+continues to use Yarn 1 frozen-lockfile installs.
 
 > **Known Nextra issue:** Do not upgrade `static/nextra` from `nextra`/`nextra-theme-docs`
 > `4.6.0` to `4.6.1` unless the upstream issue is fixed or you have a template code fix.
@@ -430,12 +431,13 @@ CMD ["### extended tests not implemented ###"]
 
 #### 8. Handle `{{ name }}` in lockfiles
 
-If the package manager embeds the project name in its lockfile (e.g. `uv.lock`), store
-`{{ name }}` in the lockfile too — the template engine substitutes all files in `skeleton/`.
+If the package manager embeds the project name in its lockfile (e.g. `uv.lock` and the Yarn 4
+lockfile in `nextjs/web`), store `{{ name }}` in the lockfile too — the template engine
+substitutes all files in `skeleton/`.
 Add dependency-update instructions to this file following the `python/web` pattern.
 
-Lockfiles that do not embed the project name (e.g. `yarn.lock`, `go.sum`) need no special
-handling. Always commit the lockfile; do not `.gitignore` it.
+Lockfiles that do not embed the project name (e.g. the Yarn 1 lockfile in `static/nextra` and
+`go.sum`) need no special handling. Always commit the lockfile; do not `.gitignore` it.
 
 #### 9. Smoke-test and validate
 
