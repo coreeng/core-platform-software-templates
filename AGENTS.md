@@ -148,17 +148,30 @@ build image and `eclipse-temurin:NN-jre-noble` runtime image in `skeleton/Docker
 test Dockerfiles to the same JDK version. Gradle 9+ has no alpine variant for JDK 25 — use
 `-noble` (Ubuntu) instead.
 
-#### nextjs/web and static/nextra
+#### nextjs/web
+
+The package name is intentionally the stable private name `app`. Yarn 4 sorts workspace entries
+by package name, so rendering `{{ name }}` into both `package.json` and `yarn.lock` would make the
+generated lockfile non-canonical for some application names and break immutable installs.
+
+Update dependencies directly:
+
+```bash
+cd nextjs/web/skeleton
+npx npm-check-updates -u
+yarn install
+```
+
+#### static/nextra
 
 `package.json` contains `"name": "{{ name }}"` which is not a valid npm name — substitute temporarily:
 
 ```bash
-cd <template>/skeleton
+cd static/nextra/skeleton
 sed -i 's/"name": "{{ name }}"/"name": "app"/' package.json
 npx npm-check-updates -u
 yarn install
 sed -i 's/"name": "app"/"name": "{{ name }}"/' package.json
-# nextjs/web uses Yarn 4, so restore app@workspace:. to {{ name }}@workspace:. in yarn.lock too.
 ```
 
 When updating dependencies, always regenerate the lockfile(s) so transitive dependencies also
@@ -186,8 +199,8 @@ continues to use Yarn 1 frozen-lockfile installs.
 > newer version builds successfully.
 
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
-`{{ name }}` substitution needed; for `static/nextra`, temporarily set parent `package.json`
-`name` to a valid value so `yarn install` can run):
+`{{ name }}` substitution needed; for `static/nextra`, temporarily set the parent
+`package.json` name to a valid value so `yarn install` can run):
 
 ```bash
 # nextjs/web:
@@ -429,12 +442,15 @@ ENTRYPOINT ["echo"]
 CMD ["### extended tests not implemented ###"]
 ```
 
-#### 8. Handle `{{ name }}` in lockfiles
+#### 8. Handle project names in lockfiles
 
-If the package manager embeds the project name in its lockfile (e.g. `uv.lock` and the Yarn 4
-lockfile in `nextjs/web`), store `{{ name }}` in the lockfile too — the template engine
-substitutes all files in `skeleton/`.
-Add dependency-update instructions to this file following the `python/web` pattern.
+If canonical lockfile ordering depends on the project name, use a stable valid project name in
+both the manifest and lockfile. The Yarn 4 lockfile in `nextjs/web` uses this approach because
+rendering its workspace name after lockfile generation can invalidate the ordering.
+
+If replacing the project name does not affect canonical ordering, store `{{ name }}` in the
+manifest and lockfile so the template engine substitutes both. `uv.lock` uses this approach.
+Add dependency-update instructions to this file following the relevant existing pattern.
 
 Lockfiles that do not embed the project name (e.g. the Yarn 1 lockfile in `static/nextra` and
 `go.sum`) need no special handling. Always commit the lockfile; do not `.gitignore` it.
