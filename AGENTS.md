@@ -126,7 +126,7 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.3.1-jdk25-noble gradle wrapper --gradle-version 9.3.1
+  docker.io/gradle:9.6.1-jdk26-noble gradle wrapper --gradle-version 9.6.1
 ```
 
 This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
