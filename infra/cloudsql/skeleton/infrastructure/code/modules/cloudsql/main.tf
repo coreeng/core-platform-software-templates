@@ -167,105 +167,15 @@ resource "null_resource" "grant_iam_user_privileges" {
 
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
-    command     = <<-EOT
-      set -e
-
-      # Ensure proxy process is cleaned up on exit or error
-      # EXIT trap works with set -e to catch both normal exit and errors
-      cleanup_proxy() {
-        if [ ! -z "$PROXY_PID" ]; then
-          echo "Cleaning up Cloud SQL Proxy (PID: $PROXY_PID)..."
-          kill $PROXY_PID 2>/dev/null || true
-          wait $PROXY_PID 2>/dev/null || true
-        fi
-      }
-      trap cleanup_proxy EXIT
-
-      echo "Granting privileges on database '${each.value.database}' to '${each.value.iam_user}'..."
-
-      # Get connection name for Cloud SQL Proxy
-      CONNECTION_NAME=$(gcloud sql instances describe ${each.value.cluster_name} \
-        --project=${var.infrastructure_project_id} \
-        --format='value(connectionName)')
-
-      # Start Cloud SQL Proxy in background on random port with retry logic
-      MAX_PORT_RETRIES=10
-      PROXY_STARTED=false
-
-      for port_attempt in $(seq 1 $MAX_PORT_RETRIES); do
-        PROXY_PORT=$((30000 + RANDOM % 10000))
-        echo "Attempt $port_attempt: Starting Cloud SQL Proxy on port $PROXY_PORT..."
-
-        # Start proxy and capture output
-        cloud-sql-proxy "$CONNECTION_NAME" --port=$PROXY_PORT &
-        PROXY_PID=$!
-
-        # Give proxy a moment to fail if port is in use
-        sleep 1
-
-        # Check if proxy is still running (it exits immediately if port is in use)
-        if kill -0 $PROXY_PID 2>/dev/null; then
-          PROXY_STARTED=true
-          echo "Cloud SQL Proxy started successfully on port $PROXY_PORT"
-          break
-        else
-          echo "Port $PROXY_PORT was in use, trying another port..."
-          PROXY_PID=""
-        fi
-      done
-
-      if [ "$PROXY_STARTED" = false ]; then
-        echo "ERROR: Failed to start Cloud SQL Proxy after $MAX_PORT_RETRIES attempts"
-        exit 1
-      fi
-
-      # Wait for proxy to be ready with retry logic (max 30 seconds)
-      echo "Waiting for Cloud SQL Proxy to be ready..."
-      for i in $(seq 1 30); do
-        if pg_isready -h 127.0.0.1 -p $PROXY_PORT -U postgres -q 2>/dev/null; then
-          echo "Cloud SQL Proxy is ready after $i seconds"
-          break
-        fi
-        if [ $i -eq 30 ]; then
-          echo "ERROR: Cloud SQL Proxy failed to become ready after 30 seconds"
-          exit 1
-        fi
-        sleep 1
-      done
-
-      # Execute SQL via psql (password provided via PGPASSWORD environment variable)
-      # Note: Some grants may fail if postgres user doesn't own certain objects (e.g., flyway_schema_history)
-      # This is expected and acceptable - psql will continue without ON_ERROR_STOP
-      echo "Executing privilege grants..."
-      psql -h 127.0.0.1 -p $PROXY_PORT -U postgres -d ${each.value.database} \
-        -c "GRANT ALL PRIVILEGES ON DATABASE \"${each.value.database}\" TO \"${each.value.iam_user}\";" \
-        -c "GRANT ALL PRIVILEGES ON SCHEMA public TO \"${each.value.iam_user}\";" \
-        -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO \"${each.value.iam_user}\";" \
-        -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO \"${each.value.iam_user}\";" \
-        -c "GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO \"${each.value.iam_user}\";" \
-        -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO \"${each.value.iam_user}\";" \
-        -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO \"${each.value.iam_user}\";" \
-        -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON FUNCTIONS TO \"${each.value.iam_user}\";"
-
-      # Grant PostgreSQL roles if specified
-      ROLES="${join(",", each.value.roles)}"
-      if [ ! -z "$ROLES" ]; then
-        echo "Granting PostgreSQL roles to '${each.value.iam_user}': $ROLES"
-        IFS=',' read -ra ROLE_ARRAY <<< "$ROLES"
-        for role in "$${ROLE_ARRAY[@]}"; do
-          if [ ! -z "$role" ]; then
-            echo "  Granting role: $role"
-            psql -h 127.0.0.1 -p $PROXY_PORT -U postgres -d ${each.value.database} \
-              -c "GRANT \"$role\" TO \"${each.value.iam_user}\";" || echo "  Warning: Failed to grant role $role (may not exist or already granted)"
-          fi
-        done
-      fi
-
-      echo "Privileges granted successfully (errors for non-postgres owned objects are expected)"
-    EOT
+    command     = "/bin/bash \"${path.module}/scripts/grant-iam-user-privileges.sh\""
 
     environment = {
-      PGPASSWORD = nonsensitive(random_password.cloudsql_initial_password.result)
+      CLUSTER_NAME   = each.value.cluster_name
+      DATABASE_NAME  = each.value.database
+      IAM_USER       = each.value.iam_user
+      PGPASSWORD     = nonsensitive(random_password.cloudsql_initial_password.result)
+      POSTGRES_ROLES = jsonencode(each.value.roles)
+      PROJECT_ID     = var.infrastructure_project_id
     }
   }
 
@@ -291,18 +201,23 @@ resource "null_resource" "apply_user_password_policy" {
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command     = <<-EOT
-      set -e
+      set -euo pipefail
 
-      echo "Applying password policy to postgres user on instance '${each.key}-${var.environment}-cluster'..."
+      echo "Applying password policy to postgres user on instance '$CLUSTER_NAME'..."
 
       gcloud sql users set-password-policy postgres \
-        --instance=${each.key}-${var.environment}-cluster \
-        --project=${var.infrastructure_project_id} \
-        --host=% \
+        --instance="$CLUSTER_NAME" \
+        --project="$PROJECT_ID" \
+        --host="%" \
         --password-policy-enable-password-verification
 
       echo "Password verification enabled for postgres user"
     EOT
+
+    environment = {
+      CLUSTER_NAME = "${each.key}-${var.environment}-cluster"
+      PROJECT_ID   = var.infrastructure_project_id
+    }
   }
 
   depends_on = [

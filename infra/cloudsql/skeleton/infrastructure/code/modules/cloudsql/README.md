@@ -218,7 +218,7 @@ When IAM users are configured for any database:
    - `roles/cloudsql.instanceUser` - Allows authenticating to Cloud SQL instances using IAM
    - `roles/serviceusage.serviceUsageConsumer` - Allows cross-project access (platform → infrastructure)
 3. **Comprehensive PostgreSQL privileges** are automatically granted to each IAM user for **only the databases they are specified in**
-4. The privilege grants are performed using `cloud-sql-proxy` and `psql` during `terraform apply` via a `null_resource` provisioner
+4. The privilege grants are performed using `cloud-sql-proxy` and `psql` during `terraform apply` via a `null_resource` provisioner.
 
 **Privileges Granted** (per database):
 - `ALL PRIVILEGES` on the database (includes CONNECT, CREATE, TEMPORARY)
@@ -230,7 +230,8 @@ When IAM users are configured for any database:
 - Optionally, additional PostgreSQL roles can be granted to IAM users by specifying the `roles` list in the IAM user configuration
 - Common built-in roles include: `pg_read_all_data`, `pg_write_all_data`, `pg_read_all_settings`, `pg_read_all_stats`, `pg_monitor`, `pg_signal_backend`
 - Roles are granted using `GRANT "<role>" TO "<iam_user>";` during the provisioning process
-- If a role doesn't exist or is already granted, the process continues with a warning
+- All database and role grants run in one transaction. If any requested grant fails, the transaction is rolled back and the infrastructure apply fails.
+- Granting an existing role is idempotent. Removing a role from configuration does not revoke an existing membership.
 
 **Note**: PostgreSQL truncates IAM usernames to end at `.iam` due to the 63-character username limit. For example, `service-account@project.iam.gserviceaccount.com` becomes `service-account@project.iam` in the database.
 
