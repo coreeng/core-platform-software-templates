@@ -15,6 +15,7 @@
 ├── python/web      — Python (FastAPI) web service
 ├── docker/web      — Generic Docker web service (podinfo reference image)
 ├── static/nextra   — Nextra static documentation site
+├── monitoring-stack — Shared Prometheus, Grafana, and Alertmanager stack
 └── infra/
     ├── cloudsql    — Cloud SQL infrastructure (OpenTofu)
     ├── kafka       — GCP Managed Service for Apache Kafka infrastructure (OpenTofu)
@@ -72,6 +73,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `go/web` | `p2p/tests/integration/go.mod` | Go version, all deps including `godog` | `go get -u` |
 | `go/web` | `p2p/tests/integration/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `godog@vX.Y.Z` | matches `integration/go.mod` |
 | `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-noble` in Dockerfile; regenerate all wrapper files (see below) |
+| `java/web` | `skeleton/.java-version` | Local JDK version | matches `sourceCompatibility`, build image, and runtime image |
 | `java/web` | `skeleton/service/build.gradle` | Spring Boot, Spring DM, SpringDoc, Guava, HikariCP, `sourceCompatibility`/`targetCompatibility` | [spring.io](https://spring.io/projects/spring-boot), Maven Central |
 | `java/web` | `skeleton/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` (build), `eclipse-temurin:NN-jre-noble` (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
 | `java/web` | `p2p/tests/functional/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
@@ -81,11 +83,11 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `nextjs/web` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
 | `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `nextjs/web` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
-| `nextjs/web` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
+| `nextjs/web` | `p2p/tests/functional/Dockerfile` | Node image, Playwright image, Yarn | matches the app runtime, `@playwright/test`, and `packageManager` |
 | `static/nextra` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
 | `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `static/nextra` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
-| `static/nextra` | `p2p/tests/functional/Dockerfile` | Playwright image | matches `@playwright/test` version |
+| `static/nextra` | `p2p/tests/functional/Dockerfile` | Node image, Playwright image, Yarn | matches the app runtime, `@playwright/test`, and `packageManager` |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
 | `python/web` | `skeleton/uv.lock` | locked Python deps | `uv lock` |
 | `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `docker.io/astral/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
@@ -94,6 +96,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `docker/web` | `skeleton/Dockerfile` | `stefanprodan/podinfo:X.Y.Z` | [podinfo releases](https://github.com/stefanprodan/podinfo/releases) |
 | `docker/web` | `p2p/tests/{functional,integration,extended}/go.mod` | Go version, all deps | `go get -u` |
 | `docker/web` | `p2p/tests/{functional,integration,extended}/Dockerfile` | `golang:X.Y.Z-trixie` | Go version in `go.mod` |
+| `monitoring-stack` | `p2p/tests/integration/{go.mod,Dockerfile}` | Go version, `golang:X.Y.Z-trixie` | same Go version as `go/web` |
 | **all** | `p2p/tests/nft/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `prom/prometheus:vX.Y.Z`, `alpine:A.B`, `xk6@vX.Y.Z`, `xk6-prometheus@vX.Y.Z` | see [NFT tests](#nft-tests-all-templates) below |
 
 #### Update all test dependencies
@@ -126,7 +129,8 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.6.1-jdk26-noble gradle wrapper --gradle-version 9.6.1
+  docker.io/gradle:9.6.1-jdk26-noble gradle wrapper --gradle-version 9.6.1 \
+  --gradle-distribution-sha256-sum 9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14
 ```
 
 This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
@@ -437,7 +441,7 @@ Use the same Alpine version as the rest of the template (check the current versi
 `p2p/tests/nft/Dockerfile`):
 
 ```dockerfile
-FROM docker.io/alpine:3.23.4
+FROM docker.io/alpine:3.24.1
 ENTRYPOINT ["echo"]
 CMD ["### extended tests not implemented ###"]
 ```
