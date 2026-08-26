@@ -1,0 +1,39 @@
+# Source control and local tooling
+.git
+.gitignore
+.p2p.mk
+.idea
+.vscode
+*.swp
+**/.DS_Store
+
+# OpenTofu and Terragrunt runtime artifacts
+**/.terraform
+**/.terraform/**
+**/.terragrunt-cache
+**/.terragrunt-cache/**
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/*.plan
+**/plan.zip
+**/crash.log
+**/crash.*.log
+
+# Local credentials and generated runtime configuration
+**/.config
+**/.config/**
+**/gcloud-config
+**/gcloud-config/**
+**/application_default_credentials.json
+**/credentials.json
+**/credentials.*.json
+**/.env
+**/.env.*
+/common.yaml
+/config.yaml
+
+# Miscellaneous local output
+**/*.log
+**/tmp
+**/tmp/**
