@@ -10,16 +10,18 @@ locals {
   tenant_name = get_env("tenant_name")
   app_name    = get_env("app_name")
 
-  # Check if required configuration is present
   has_required_config = alltrue([
-    can(local.config.region),
-    can(local.config.infrastructure_project_id),
-    can(local.config.platform_project_id)
+    try(trimspace(local.config.region) != "", false),
+    try(trimspace(local.config.infrastructure_project_id) != "", false),
+    try(trimspace(local.config.platform_project_id) != "", false),
   ])
 }
 
-# Skip execution if required configuration is missing
-skip = !local.has_required_config
+exclude {
+  if      = !local.has_required_config
+  actions = ["all"]
+  no_run  = true
+}
 
 inputs = {
   p2p_version               = local.p2p_version

@@ -114,6 +114,8 @@ resource "google_project_iam_member" "cloudsql_client" {
   project = var.infrastructure_project_id
   role    = "roles/cloudsql.client"
   member  = each.value
+
+  depends_on = [module.project-services]
 }
 
 # Grant Cloud SQL Instance User role to all IAM users
@@ -124,6 +126,8 @@ resource "google_project_iam_member" "cloudsql_instance_user" {
   project = var.infrastructure_project_id
   role    = "roles/cloudsql.instanceUser"
   member  = each.value
+
+  depends_on = [module.project-services]
 }
 
 # Grant Service Usage Consumer role to IAM service accounts only
@@ -134,6 +138,8 @@ resource "google_project_iam_member" "service_usage_consumer" {
   project = var.infrastructure_project_id
   role    = "roles/serviceusage.serviceUsageConsumer"
   member  = each.value
+
+  depends_on = [module.project-services]
 }
 
 # Grant Cloud SQL Viewer role to all IAM users
@@ -144,6 +150,8 @@ resource "google_project_iam_member" "cloudsql_viewer" {
   project = var.infrastructure_project_id
   role    = "roles/cloudsql.viewer"
   member  = each.value
+
+  depends_on = [module.project-services]
 }
 
 # Grant comprehensive privileges to IAM users specified for each database

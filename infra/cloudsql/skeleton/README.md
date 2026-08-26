@@ -125,13 +125,21 @@ cloudsql:
 
 ## When Provisioning Runs
 
-Terragrunt skips provisioning until all required bootstrap values are present:
+Terragrunt excludes provisioning until all required bootstrap values are present and nonblank:
 
 - `region`
 - `infrastructure_project_id`
 - `platform_project_id`
 
 Cloud SQL resources are only created when `cloudsql.enabled` is `true` and at least one PostgreSQL cluster is configured.
+
+## Local Runner Credentials
+
+Local deployment and interactive runner targets require Google Application Default Credentials. Run `gcloud auth application-default login`, or set `CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE` to an existing ADC JSON file before invoking a `deploy-*` or `run-*-app` target.
+
+The target copies only that credential into a temporary directory, mounts the file read-only over a container-local gcloud configuration tmpfs, and removes the temporary copy when the container exits. It does not mutate or mount the host gcloud configuration directory.
+
+The runner image supports Linux `amd64` and `arm64`. Its build verifies the downloaded jq, Cloud SQL Auth Proxy, OpenTofu, Terragrunt, and yq executables before installation, validates Terragrunt semantics, and runs the credential-free OpenTofu regression tests.
 
 ## Network Defaults
 

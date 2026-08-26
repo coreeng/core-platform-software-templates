@@ -18,11 +18,11 @@ p2p-prod:                                                 deploy-prod
 
 .PHONY: lint-config
 lint-config: ## Run config lint checks
-	docker run --rm --mount type=bind,source=./p2p/config,target=/data docker.io/cytopia/yamllint -s .
+	docker run --rm --mount type=bind,source=./p2p/config,target=/data docker.io/cytopia/yamllint:1 -s .
 
 .PHONY: lint-dockerfile
 lint-dockerfile: ## Run dockerfile lint checks
-	docker run --rm -i docker.io/hadolint/hadolint < Dockerfile
+	docker run --rm -i docker.io/hadolint/hadolint:v2.15.1 < Dockerfile
 
 .PHONY: lint-app
 lint-app: ## Run app lint checks
@@ -58,14 +58,18 @@ push-%:
 
 .PHONY: deploy-%
 deploy-%:
-	if [ -n "$(CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE)" ] ; then \
-		mkdir -p ~/.config/gcloud ; \
-		cat $(CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE) >> ~/.config/gcloud/application_default_credentials.json ; \
-	fi
+	set -eu; \
+	gcloud_config=$$(mktemp -d); \
+	trap 'rm -rf "$$gcloud_config"' EXIT INT TERM; \
+	credential_file="$${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-$$HOME/.config/gcloud/application_default_credentials.json}"; \
+	test -f "$$credential_file"; \
+	install -m 0600 -- "$$credential_file" "$$gcloud_config/application_default_credentials.json"; \
 	docker run --rm -P --name "$(p2p_app_name)" \
-		-v ~/.config/gcloud/:/root/.config/gcloud \
+		--mount type=tmpfs,destination=/root/.config/gcloud \
+		--mount type=bind,source="$$gcloud_config/application_default_credentials.json",destination=/root/.config/gcloud/application_default_credentials.json,readonly \
 		-v "${PWD}/p2p/config/common.yaml:/app/common.yaml" \
 		-v "${PWD}/p2p/config/$*.yaml:/app/config.yaml" \
+		-e CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=/root/.config/gcloud/application_default_credentials.json \
 		-e environment=$* \
 		-e tenant_name=$(p2p_tenant_name) \
 		-e app_name=$(p2p_app_name) \
@@ -79,10 +83,18 @@ run-app: run-functional-app ## Run app
 
 .PHONY: run-%-app
 run-%-app:
+	set -eu; \
+	gcloud_config=$$(mktemp -d); \
+	trap 'rm -rf "$$gcloud_config"' EXIT INT TERM; \
+	credential_file="$${CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE:-$$HOME/.config/gcloud/application_default_credentials.json}"; \
+	test -f "$$credential_file"; \
+	install -m 0600 -- "$$credential_file" "$$gcloud_config/application_default_credentials.json"; \
 	docker run --rm -P -it --name "$(p2p_app_name)-$*" \
-		-v ~/.config/gcloud/:/root/.config/gcloud \
+		--mount type=tmpfs,destination=/root/.config/gcloud \
+		--mount type=bind,source="$$gcloud_config/application_default_credentials.json",destination=/root/.config/gcloud/application_default_credentials.json,readonly \
 		-v "${PWD}/p2p/config/common.yaml:/app/common.yaml" \
 		-v "${PWD}/p2p/config/$*.yaml:/app/config.yaml" \
+		-e CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=/root/.config/gcloud/application_default_credentials.json \
 		-e environment=$* \
 		-e tenant_name=$(p2p_tenant_name) \
 		-e app_name=$(p2p_app_name) \
