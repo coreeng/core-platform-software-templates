@@ -129,8 +129,8 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.6.1-jdk26-noble gradle wrapper --gradle-version 9.6.1 \
-  --gradle-distribution-sha256-sum 9c0f7faeeb306cb14e4279a3e084ca6b596894089a0638e68a07c945a32c9e14
+  docker.io/gradle:9.8.0-jdk26-noble gradle wrapper --gradle-version 9.8.0 \
+  --gradle-distribution-sha256-sum bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c
 ```
 
 This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
@@ -446,7 +446,7 @@ Use the same Alpine version as the rest of the template (check the current versi
 `p2p/tests/nft/Dockerfile`):
 
 ```dockerfile
-FROM docker.io/alpine:3.24.1
+FROM docker.io/alpine:3.24.2
 ENTRYPOINT ["echo"]
 CMD ["### extended tests not implemented ###"]
 ```

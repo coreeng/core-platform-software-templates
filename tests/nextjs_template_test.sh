@@ -43,7 +43,7 @@ for template in nextjs/web static/nextra; do
   fi
 done
 
-if ! grep -q 'node:26.5.0-bookworm-slim AS node-runtime' \
+if ! grep -q 'node:26.10.0-bookworm-slim AS node-runtime' \
   static/nextra/skeleton/p2p/tests/functional/Dockerfile; then
   printf 'FAIL: static Nextra functional tests must use the Node 26 runtime\n'
   failures=$((failures + 1))
