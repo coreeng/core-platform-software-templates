@@ -21,6 +21,8 @@ config:
         stabilizationWindowSeconds: int(min=0)
       scaleDown:
         stabilizationWindowSeconds: int(min=0)
+  ingress:
+    enabled: bool()
   resources:
     requests:
       cpu: str()

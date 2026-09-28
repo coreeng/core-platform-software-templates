@@ -40,7 +40,7 @@ substituted:
 
 App templates (`kind: app`) deploy containerised web services. Each contains:
 
-- `template.yaml` — `kind: app`, replica count, CPU/memory requests and limits, autoscaling defaults
+- `template.yaml` — `kind: app`, replica count, CPU/memory requests and limits, autoscaling defaults, and an ingress toggle that defaults to disabled
 - `skeleton/Makefile` — P2P targets: `p2p-build`, `p2p-functional`, `p2p-nft`, `p2p-integration`, `p2p-extended-test`, `p2p-prod`
 - `skeleton/.github/workflows/` — `fast-feedback.yaml`, `extended-test.yaml`, `prod.yaml`
 - `skeleton/p2p/config/` — Helm config per P2P stage (`common.yaml` + per-stage overrides)
@@ -303,7 +303,7 @@ Each template exposes different ports and health endpoints:
 | `go/web`, `python/web` | `-p 8080:8080 -p 8081:8081` | 3s | `:8080/hello` → "Hello world"; `:8081/internal/status`; `:8081/metrics` |
 | `java/web` | `-p 8080:8080 -p 8081:8081` | 8s | `:8080/hello` → "Hello World!"; `:8081/health` → `{"status":"UP"}`; `:8081/prometheus` |
 | `nextjs/web`, `static/nextra` | `-p 3000:3000 -p 8081:8081` | 5s | `:3000/readyz` → "OK"; `:3000/livez` → "OK"; `:8081/metrics` (Prometheus exposition) |
-| `docker/web` | `-p 9898:9898` | 2s | `:9898/healthz` → `{"status":"OK"}`; `:9898/readyz` → `{"status":"OK"}` |
+| `docker/web` | `-p 8080:8080` | 2s | `:8080/healthz` → `{"status":"OK"}`; `:8080/readyz` → `{"status":"OK"}` |
 
 ```bash
 docker run --rm <PORT_FLAGS> --name myapp myapp-test &
@@ -365,6 +365,8 @@ config:
         stabilizationWindowSeconds: 30
       scaleDown:
         stabilizationWindowSeconds: 300
+  ingress:
+    enabled: false
   resources:
     requests:
       cpu: 50m
@@ -417,12 +419,13 @@ Every app template exposes two ports:
 
 | Port | Purpose | Ingress-exposed? |
 |---|---|---|
-| 8080 | Application traffic (`GET /hello`) | Yes |
+| 8080 | Application traffic (`GET /hello`) | Only when `config.ingress.enabled` is `true` |
 | 8081 | Internal ops (`GET /metrics`, `GET /internal/status`) | No |
 
 The port separation prevents metrics and health endpoints from being accidentally exposed
-publicly. The `/hello` endpoint must return a body containing `"Hello world"` — this is what
-the K6 NFT script asserts.
+publicly. Ingress must remain disabled by default; generated repositories can opt in by setting
+`config.ingress.enabled: true` in `app.yaml`. The `/hello` endpoint must return a body containing
+`"Hello world"` — this is what the K6 NFT script asserts.
 
 Use the framework's lightest available Prometheus metrics library. Avoid per-request
 middleware with significant overhead (e.g. full OpenTelemetry tracing instrumentation).
@@ -432,8 +435,10 @@ stage or test target per template rather than relying on a fixed CPU-per-replica
 #### 6. Implement functional and integration BDD tests
 
 Copy the Gherkin feature files from `go/web` (the scenarios are language-agnostic HTTP
-checks). Use the language's standard Cucumber library. Keep the test Dockerfile minimal —
-BDD runner and HTTP client only.
+checks). Use the language's standard Cucumber library. Service scenarios must always use
+`SERVICE_ENDPOINT`. Ingress scenarios must use `INGRESS_ENDPOINT` when available and be skipped
+when ingress is disabled. The NFT Helm value must select `ingress` or `service` from
+`config.ingress.enabled`. Keep the test Dockerfile minimal — BDD runner and HTTP client only.
 
 #### 7. Add a placeholder extended test Dockerfile
 

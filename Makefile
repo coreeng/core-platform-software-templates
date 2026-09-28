@@ -34,5 +34,6 @@ templates-validate:
 	fi ; \
 	exit "$${ERRVAL}"
 	@bash tests/template_docs_test.sh
+	@bash tests/app_ingress_test.sh
 	@bash tests/java_template_test.sh
 	@bash tests/nextjs_template_test.sh
