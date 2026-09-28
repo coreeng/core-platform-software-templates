@@ -36,5 +36,6 @@ templates-validate:
 	@bash tests/template_docs_test.sh
 	@bash tests/app_ingress_test.sh
 	@bash tests/dockerfile_user_test.sh
+	@bash tests/security_ignore_test.sh
 	@bash tests/java_template_test.sh
 	@bash tests/nextjs_template_test.sh
