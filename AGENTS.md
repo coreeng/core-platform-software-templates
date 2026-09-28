@@ -97,7 +97,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `docker/web` | `p2p/tests/{functional,integration,extended}/go.mod` | Go version, all deps | `go get -u` |
 | `docker/web` | `p2p/tests/{functional,integration,extended}/Dockerfile` | `golang:X.Y.Z-trixie` | Go version in `go.mod` |
 | `monitoring-stack` | `p2p/tests/integration/{go.mod,Dockerfile}` | Go version, `golang:X.Y.Z-trixie` | same Go version as `go/web` |
-| **all** | `p2p/tests/nft/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `prom/prometheus:vX.Y.Z`, `alpine:A.B`, `xk6@vX.Y.Z`, `xk6-prometheus@vX.Y.Z` | see [NFT tests](#nft-tests-all-templates) below |
+| **all** | `p2p/tests/nft/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `alpine:A.B`, K6, `xk6@vX.Y.Z`, `xk6-prometheus@vX.Y.Z`, patched Go module replacements | see [NFT tests](#nft-tests-all-templates) below |
 
 #### Update all test dependencies
 
@@ -260,10 +260,15 @@ The NFT Dockerfile builds a custom K6 binary with `xk6-prometheus`.
 Keep these versions consistent across all templates and update them together:
 
 - Go builder: `golang:X.Y.Z-alpineA.B` — use the **same Go version** as the main `go/web` Dockerfile and use the **latest Alpine variant** (check Docker Hub for the newest `X.Y.Z-alpineA.B` tag)
-- Prometheus (`promtool`): `prom/prometheus:vX.Y.Z` — **do not upgrade to v3.x, not yet supported; keep on latest v2.x**
 - Alpine runtime: `alpine:A.B` — use the **same Alpine version** as the Go builder above
 - `xk6`: `go install go.k6.io/xk6@vX.Y.Z` — check [grafana/xk6 releases](https://github.com/grafana/xk6/releases) for the latest tag (root package since v1.0.0, not `cmd/xk6`)
 - `xk6-prometheus`: `xk6 build --with github.com/coreeng/xk6-prometheus@vX.Y.Z` — check [coreeng/xk6-prometheus releases](https://github.com/coreeng/xk6-prometheus/releases) for the latest tag
+- K6: pass the latest stable v1 release explicitly to `xk6 build`. `xk6-prometheus` does not yet support K6 v2; omitting the version resolves the extension's obsolete K6 dependency instead.
+- Keep the explicit `xk6 build --replace` module versions at or above every fixed version reported by Trivy. Remove a replacement only when the selected K6/extension versions resolve a non-vulnerable version directly.
+
+NFT threshold validation uses `curl` and `jq` against Prometheus's stable `/api/v1/query`
+endpoint. Do not copy `promtool` from an old Prometheus v2 image: the final v2 release contains
+fixed Go-library vulnerabilities, and K6 tests only need the HTTP query API.
 
 **Extended tests** — currently placeholders; update the base image to match the template's other test images.
 
