@@ -69,9 +69,9 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `go/web` | `skeleton/Dockerfile` | `golang:X.Y.Z-alpineA.B` (build), `alpine:A.B` (runtime) | matches `go.mod`; latest Alpine |
 | `go/web` | `skeleton/Makefile` (`lint-app`) | `golang:X.Y.Z-alpineA.B`, `revive@vX.Y.Z` | same Go image; [mgechev/revive releases](https://github.com/mgechev/revive/releases) |
 | `go/web` | `p2p/tests/functional/go.mod` | Go version, all deps including `godog` | `go get -u` |
-| `go/web` | `p2p/tests/functional/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `godog@vX.Y.Z` | matches `functional/go.mod` |
+| `go/web` | `p2p/tests/functional/Dockerfile` | `golang:X.Y.Z-alpineA.B` | matches `functional/go.mod` |
 | `go/web` | `p2p/tests/integration/go.mod` | Go version, all deps including `godog` | `go get -u` |
-| `go/web` | `p2p/tests/integration/Dockerfile` | `golang:X.Y.Z-alpineA.B`, `godog@vX.Y.Z` | matches `integration/go.mod` |
+| `go/web` | `p2p/tests/integration/Dockerfile` | `golang:X.Y.Z-alpineA.B` | matches `integration/go.mod` |
 | `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-noble` in Dockerfile; regenerate all wrapper files (see below) |
 | `java/web` | `skeleton/.java-version` | Local JDK version | matches `sourceCompatibility`, build image, and runtime image |
 | `java/web` | `skeleton/service/build.gradle` | Spring Boot, Spring DM, SpringDoc, Guava, HikariCP, `sourceCompatibility`/`targetCompatibility` | [spring.io](https://spring.io/projects/spring-boot), Maven Central |
@@ -121,7 +121,7 @@ for dir in p2p/tests/functional p2p/tests/integration; do
 done
 ```
 
-Update all image and version pins from the inventory table. The `godog@vX.Y.Z` pin in each test Dockerfile must match the version resolved into that directory's `go.mod` by the step above.
+Update all image and version pins from the inventory table. Godog is linked into the compiled test executable using the version in each test module's `go.mod`.
 
 #### java/web
 
@@ -333,7 +333,18 @@ docker build -t test-extended    "$BASE/p2p/tests/extended"
 docker rmi test-functional test-integration test-nft test-extended
 ```
 
-Repeat for every template you changed. Notable caveats:
+Repeat for every template you changed.
+
+The `go/web` functional and integration images, the `docker/web` functional,
+integration and extended images, and the `monitoring-stack` integration image
+compile a named test executable with `CGO_ENABLED=0 go test -c` in a Go builder
+stage. Their `scratch` runtime contains only that executable, CA certificates and
+any runtime test resources, including `features/` where present. They run from `/opt/app` as
+`65532:65532` and execute the binary directly with `-test.v`. The Go web suites use
+their existing `TestFeatures` entry point; the monitoring integration test remains
+a placeholder.
+
+Notable caveats:
 
 | Template | Stage | Base image | Notes |
 |---|---|---|---|
