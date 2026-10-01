@@ -62,7 +62,8 @@ for template in "${app_templates[@]}"; do
 
   # The single quotes intentionally preserve the Make expression for a literal comparison.
   # shellcheck disable=SC2016
-  if ! grep -qF -- '--set tests.nft.endpoint="$(if $(filter true,$(p2p_app_config_ingress_enabled)),ingress,service)"' "$makefile"; then
+  if ! grep -qF -- 'p2p_nft_endpoint ?= $(if $(filter true,$(p2p_app_config_ingress_enabled)),ingress,service)' "$makefile" ||
+     ! grep -qF -- '--set tests.nft.endpoint="$(p2p_nft_endpoint)"' "$makefile"; then
     printf 'FAIL: %s: NFT endpoint must follow the ingress toggle\n' "$makefile"
     failures=$((failures + 1))
   fi
