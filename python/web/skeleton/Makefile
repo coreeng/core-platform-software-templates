@@ -8,11 +8,14 @@ include .p2p.mk
 
 # Native targets use Portal-resolved settings. Local test pods use Services.
 ifneq ($(CORECTL_CONTEXT),)
+ifneq ($(filter command line,$(origin P2P_INGRESS_DOMAIN) $(origin P2P_INGRESS_CLASS) $(origin P2P_INGRESS_ENABLED) $(origin P2P_INGRESS_MODE)),)
+$(error Native ingress settings must come from the resolved environment, not Make command variables)
+endif
 override BASE_DOMAIN := $(P2P_INGRESS_DOMAIN)
 override p2p_app_config_ingress_enabled := $(P2P_INGRESS_ENABLED)
-p2p_ingress_args = --set ingress.className="$(P2P_INGRESS_CLASS)" --set tests.ingress.enabled=$(if $(filter LOCAL_HTTP,$(P2P_INGRESS_MODE)),false,true)
+override p2p_ingress_args := --set ingress.className="$(P2P_INGRESS_CLASS)" --set tests.ingress.enabled=$(if $(filter LOCAL_HTTP,$(P2P_INGRESS_MODE)),false,true)
 ifneq ($(filter LOCAL_HTTP,$(P2P_INGRESS_MODE)),)
-p2p_nft_endpoint := service
+override p2p_nft_endpoint := service
 endif
 endif
 p2p_nft_endpoint ?= $(if $(filter true,$(p2p_app_config_ingress_enabled)),ingress,service)
