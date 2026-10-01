@@ -246,6 +246,13 @@ Also update `behave` and `requests` versions in the functional/integration test 
 
 Update the image tag directly in `skeleton/Dockerfile` (`stefanprodan/podinfo:X.Y.Z`).
 
+Keep `apk upgrade --no-cache` to apply available package updates from the base image's
+configured Alpine release repositories. Do not restore exact Alpine package revision pins:
+those revisions can disappear from the repositories and break generated application builds.
+Fresh builds can resolve newer package revisions, so verify the image with the Docker smoke
+test and security scan. A cached Docker build layer does not rerun the upgrade; use
+`docker build --pull --no-cache` when verifying package updates.
+
 Update each test module (replace `X.Y.Z` with the same Go version used in `go/web`):
 
 ```bash
