@@ -5,12 +5,6 @@ trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/bin"
 cat > "$work/include.mk" <<'EOF'
 SHELL := /bin/bash
-override p2p_deployment_values := .p2p-deployment-values.yaml
-.PHONY: p2p-prepare-deployment-values
-p2p-prepare-deployment-values:
-	rm -f .p2p-deployment-values.yaml
-	test "$${FAIL_PREPARATION:-false}" = false
-	printf '%s\n' '{"ingress":{"enabled":true,"domain":"trial.localhost","className":"traefik"},"tests":{"ingress":{"enabled":false},"nft":{"endpoint":"service"}}}' > .p2p-deployment-values.yaml
 EOF
 cat > "$work/bin/curl" <<'EOF'
 #!/usr/bin/env bash
@@ -18,41 +12,42 @@ cp "$FAKE_INCLUDE" .p2p.mk
 EOF
 cat > "$work/bin/helm" <<'EOF'
 #!/usr/bin/env bash
+set -euo pipefail
 printf '%s\n' "$@" > "$CAPTURE"
-if [[ "$1" == upgrade ]]; then test -f .p2p-deployment-values.yaml; fi
-EOF
-cat > "$work/bin/envsubst" <<'EOF'
-#!/usr/bin/env bash
-cat
+if [[ "$1" == upgrade ]]; then
+  while (( $# )); do
+    if [[ "$1" == -f ]]; then cat "$2" > "$CAPTURE_VALUES"; break; fi
+    shift
+  done
+fi
 EOF
 chmod +x "$work/bin/"*
-export PATH="$work/bin:$PATH" FAKE_INCLUDE="$work/include.mk" CAPTURE="$work/args"
+export PATH="$work/bin:$PATH" FAKE_INCLUDE="$work/include.mk" CAPTURE="$work/args" CAPTURE_VALUES="$work/values"
 for template in docker/web go/web java/web nextjs/web python/web static/nextra; do
   directory="$work/${template//\//-}"
   mkdir -p "$directory/p2p"
   cp "$template/skeleton/Makefile" "$directory/Makefile"
   cp -r "$template/skeleton/p2p/config" "$directory/p2p/config"
-  make -s -C "$directory" p2p-deployment-values-contract
-  for stage in functional nft integration extended-test prod; do
-    make -s -C "$directory" "deploy-$stage" p2p_app_name=shop p2p_namespace="shop-$stage" \
-      p2p_deployment_values=other.yaml >/dev/null
-    grep -qx '0.17.0' "$CAPTURE"
-    python3 - "$CAPTURE" <<'PY'
-import sys
-from pathlib import Path
-args = Path(sys.argv[1]).read_text().splitlines()
-assert args[-3:] == ['-f', '.p2p-deployment-values.yaml', '--atomic'], args
-assert not any(arg.startswith(('tests.nft.endpoint=', 'ingress.domain=', 'tests.ingress.enabled=')) for arg in args)
-PY
+  for mode in LOCAL_HTTP EXISTING_INGRESS DISABLED LEGACY; do
+    domain=trial.localhost class=traefik enabled=true
+    case "$mode" in
+      EXISTING_INGRESS) domain=apps.example.com class=nginx ;;
+      DISABLED) enabled=false domain= class= ;;
+      LEGACY) domain=legacy.example.com class= ;;
+    esac
+    for stage in functional nft integration extended-test prod; do
+      P2P_INGRESS_ENABLED="$enabled" P2P_INGRESS_DOMAIN="$domain" P2P_INGRESS_CLASS="$class" \
+        make -s -C "$directory" "deploy-$stage" p2p_app_name=shop p2p_namespace="shop-$stage" >/dev/null
+      grep -qx '0.17.0' "$CAPTURE"
+      grep -qx "  enabled: $enabled" "$CAPTURE_VALUES"
+      grep -qx "  domain: \"$domain\"" "$CAPTURE_VALUES"
+      grep -qx "  className: \"$class\"" "$CAPTURE_VALUES"
+      grep -qx '    endpoint: service' "$CAPTURE_VALUES"
+      grep -A2 '^tests:' "$CAPTURE_VALUES" | grep -qx '    enabled: false'
+    done
   done
-  rm -f "$CAPTURE"
-  if FAIL_PREPARATION=true make -s -C "$directory" deploy-functional >/dev/null 2>&1; then
-    echo "FAIL: $template deployed after failed preparation" >&2; exit 1
-  fi
-  test ! -e "$CAPTURE"
-  test ! -e "$directory/.p2p-deployment-values.yaml"
-  if grep -qE 'P2P_INGRESS|p2p_ingress_args|p2p_nft_endpoint|BASE_DOMAIN' "$directory/Makefile"; then
-    echo "FAIL: $template contains ingress-specific Make logic" >&2; exit 1
+  if grep -qE 'P2P_INGRESS|p2p_ingress_args|p2p_nft_endpoint|BASE_DOMAIN|deployment-values|corectl' "$directory/Makefile"; then
+    echo "FAIL: $template contains ingress-specific Make logic or preparation coupling" >&2; exit 1
   fi
 done
-printf 'Shared deployment-values Make contracts passed for six templates and five stages\n'
+printf 'P2P environment Make contracts passed for six templates, five stages and four modes\n'

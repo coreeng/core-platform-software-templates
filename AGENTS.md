@@ -461,8 +461,9 @@ Copy the Gherkin feature files from `go/web` (the scenarios are language-agnosti
 checks). Use the language's standard Cucumber library. Service scenarios must always use
 `SERVICE_ENDPOINT`. All automated template tests, including NFT, use Service routing
 regardless of `config.ingress.enabled`. Optional ingress scenarios remain disabled;
-browser routing is verified separately. Shared P2P preparation writes deployment
-values, consumed as the final Helm values overlay. Keep the test Dockerfile minimal
+browser routing is verified separately. Corectl prepares the documented `P2P_*`
+environment contract; deployment YAML consumes ingress environment variables.
+Keep the test Dockerfile minimal
 — BDD runner and HTTP client only.
 
 #### 7. Add a placeholder extended test Dockerfile

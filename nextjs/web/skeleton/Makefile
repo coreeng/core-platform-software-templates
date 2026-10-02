@@ -74,11 +74,7 @@ push-%:
 
 
 .PHONY: deploy-%
-.PHONY: p2p-deployment-values-contract
-p2p-deployment-values-contract:
-	@true
-
-deploy-%: p2p-prepare-deployment-values
+deploy-%:
 	helm repo add core-platform-assets https://coreeng.github.io/core-platform-assets --force-update
 
 	helm upgrade --install "$(p2p_app_name)" core-platform-assets/core-platform-app --version 0.17.0 -n "$(p2p_namespace)" \
@@ -89,7 +85,6 @@ deploy-%: p2p-prepare-deployment-values
 		--set image.repository="$(p2p_registry)/$(p2p_app_name)" \
 		--set image.tag="$(p2p_version)" \
 		--set ingress.appUrlSuffix="$(p2p_app_url_suffix)" \
-		-f "$(p2p_deployment_values)" \
 		--atomic
 
 
