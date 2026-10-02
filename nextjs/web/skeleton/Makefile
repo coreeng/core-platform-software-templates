@@ -77,7 +77,7 @@ push-%:
 deploy-%:
 	helm repo add core-platform-assets https://coreeng.github.io/core-platform-assets --force-update
 
-	helm upgrade --install "$(p2p_app_name)" core-platform-assets/core-platform-app --version 0.17.0 -n "$(p2p_namespace)" \
+	helm upgrade --install "$(p2p_app_name)" core-platform-assets/core-platform-app -n "$(p2p_namespace)" \
 		-f <(envsubst < p2p/config/common.yaml) \
 		-f <(envsubst < p2p/config/$*.yaml) \
 		--set nameOverride="$(p2p_app_name)" \

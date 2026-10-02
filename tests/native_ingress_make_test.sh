@@ -41,7 +41,9 @@ for template in docker/web go/web java/web nextjs/web python/web static/nextra; 
       P2P_INGRESS_ENABLED="$(if [[ "$enabled" == true ]]; then echo false; else echo true; fi)" \
         P2P_INGRESS_DOMAIN="$domain" P2P_INGRESS_CLASS="$class" \
         make -s -C "$directory" "deploy-$stage" p2p_app_name=shop p2p_namespace="shop-$stage" >/dev/null
-      grep -qx '0.17.0' "$CAPTURE"
+      if grep -qx -- '--version' "$CAPTURE"; then
+        echo "FAIL: $template pins its application chart version" >&2; exit 1
+      fi
       grep -qx "  enabled: $enabled" "$CAPTURE_VALUES"
       grep -qx "  domain: \"$domain\"" "$CAPTURE_VALUES"
       grep -qx "  className: \"$class\"" "$CAPTURE_VALUES"
