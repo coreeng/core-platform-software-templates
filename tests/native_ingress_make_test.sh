@@ -5,6 +5,7 @@ trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/bin"
 cat > "$work/include.mk" <<'EOF'
 SHELL := /bin/bash
+export p2p_app_config_ingress_enabled := $(shell yq -r '.config.ingress.enabled' app.yaml)
 EOF
 cat > "$work/bin/curl" <<'EOF'
 #!/usr/bin/env bash
@@ -35,8 +36,10 @@ for template in docker/web go/web java/web nextjs/web python/web static/nextra; 
       DISABLED) enabled=false domain= class= ;;
       LEGACY) domain=legacy.example.com class= ;;
     esac
+    printf 'config:\n  ingress:\n    enabled: %s\n' "$enabled" > "$directory/app.yaml"
     for stage in functional nft integration extended-test prod; do
-      P2P_INGRESS_ENABLED="$enabled" P2P_INGRESS_DOMAIN="$domain" P2P_INGRESS_CLASS="$class" \
+      P2P_INGRESS_ENABLED="$(if [[ "$enabled" == true ]]; then echo false; else echo true; fi)" \
+        P2P_INGRESS_DOMAIN="$domain" P2P_INGRESS_CLASS="$class" \
         make -s -C "$directory" "deploy-$stage" p2p_app_name=shop p2p_namespace="shop-$stage" >/dev/null
       grep -qx '0.17.0' "$CAPTURE"
       grep -qx "  enabled: $enabled" "$CAPTURE_VALUES"

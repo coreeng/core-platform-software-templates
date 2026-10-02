@@ -52,7 +52,7 @@ tests:
     endpoint: service
 
 ingress:
-  enabled: ${P2P_INGRESS_ENABLED}
+  enabled: ${p2p_app_config_ingress_enabled}
   domain: "${P2P_INGRESS_DOMAIN}"
   className: "${P2P_INGRESS_CLASS}"
   hosts:

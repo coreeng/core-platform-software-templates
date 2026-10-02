@@ -32,11 +32,11 @@ for template in "${app_templates[@]}"; do
   if ! awk '
     $0 == "ingress:" {
       getline
-      if ($0 == "  enabled: ${P2P_INGRESS_ENABLED}") found = 1
+      if ($0 == "  enabled: ${p2p_app_config_ingress_enabled}") found = 1
     }
     END { exit(found ? 0 : 1) }
   ' "$common_values"; then
-    printf 'FAIL: %s: ingress.enabled must use the prepared P2P environment\n' "$common_values"
+    printf 'FAIL: %s: ingress.enabled must use app.yaml configuration\n' "$common_values"
     failures=$((failures + 1))
   fi
 
