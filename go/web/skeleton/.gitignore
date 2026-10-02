@@ -1,5 +1,7 @@
 # p2p makefile
 .p2p.mk
+.p2p-deployment-values.py
+.p2p-deployment-values.yaml
 
 # vi swapfiles
 *.swp

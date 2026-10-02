@@ -6,20 +6,6 @@ P2P_APP_NAME ?= {{ name }}
 $(shell curl -fsSL "https://raw.githubusercontent.com/coreeng/p2p/v1/p2p.mk" -o ".p2p.mk")
 include .p2p.mk
 
-# Native targets use Portal-resolved settings. Local test pods use Services.
-ifneq ($(CORECTL_CONTEXT),)
-ifneq ($(filter command line,$(origin P2P_INGRESS_DOMAIN) $(origin P2P_INGRESS_CLASS) $(origin P2P_INGRESS_ENABLED) $(origin P2P_INGRESS_MODE)),)
-$(error Native ingress settings must come from the resolved environment, not Make command variables)
-endif
-override BASE_DOMAIN := $(P2P_INGRESS_DOMAIN)
-override p2p_app_config_ingress_enabled := $(P2P_INGRESS_ENABLED)
-override p2p_ingress_args := --set ingress.className="$(P2P_INGRESS_CLASS)" --set tests.ingress.enabled=$(if $(filter LOCAL_HTTP,$(P2P_INGRESS_MODE)),false,true)
-ifneq ($(filter LOCAL_HTTP,$(P2P_INGRESS_MODE)),)
-override p2p_nft_endpoint := service
-endif
-endif
-p2p_nft_endpoint ?= $(if $(filter true,$(p2p_app_config_ingress_enabled)),ingress,service)
-
 # Define required p2p targets
 p2p-build:         build-app           push-app
 p2p-functional:    build-functional    push-functional    deploy-functional    run-functional
@@ -84,12 +70,11 @@ push-%:
 
 
 .PHONY: deploy-%
-.PHONY: p2p-native-ingress-contract
-p2p-native-ingress-contract:
+.PHONY: p2p-deployment-values-contract
+p2p-deployment-values-contract:
 	@true
 
-deploy-%:
-	@if [[ -n "$(CORECTL_CONTEXT)" && -z "$(P2P_INGRESS_MODE)" ]]; then echo 'Native ingress settings must be resolved by compatible P2P/corectl' >&2; exit 1; fi
+deploy-%: p2p-prepare-deployment-values
 	helm repo add core-platform-assets https://coreeng.github.io/core-platform-assets --force-update
 
 	helm upgrade --install "$(p2p_app_name)" core-platform-assets/core-platform-app --version 0.17.0 -n "$(p2p_namespace)" \
@@ -100,9 +85,7 @@ deploy-%:
 		--set image.repository="$(p2p_registry)/$(p2p_app_name)" \
 		--set image.tag="$(p2p_version)" \
 		--set ingress.appUrlSuffix="$(p2p_app_url_suffix)" \
-		--set ingress.domain="$(BASE_DOMAIN)" \
-		$(p2p_ingress_args) \
-		--set tests.nft.endpoint="$(p2p_nft_endpoint)" \
+		-f "$(p2p_deployment_values)" \
 		--atomic
 
 

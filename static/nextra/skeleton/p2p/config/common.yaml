@@ -45,6 +45,12 @@ readinessProbe:
   successThreshold: 1
   timeoutSeconds: 5
 
+tests:
+  ingress:
+    enabled: false
+  nft:
+    endpoint: service
+
 ingress:
   enabled: ${p2p_app_config_ingress_enabled}
   hosts:

@@ -459,9 +459,11 @@ stage or test target per template rather than relying on a fixed CPU-per-replica
 
 Copy the Gherkin feature files from `go/web` (the scenarios are language-agnostic HTTP
 checks). Use the language's standard Cucumber library. Service scenarios must always use
-`SERVICE_ENDPOINT`. Ingress scenarios must use `INGRESS_ENDPOINT` when available and be skipped
-when ingress is disabled. The NFT Helm value must select `ingress` or `service` from
-`config.ingress.enabled`. Keep the test Dockerfile minimal — BDD runner and HTTP client only.
+`SERVICE_ENDPOINT`. All automated template tests, including NFT, use Service routing
+regardless of `config.ingress.enabled`. Optional ingress scenarios remain disabled;
+browser routing is verified separately. Shared P2P preparation writes deployment
+values, consumed as the final Helm values overlay. Keep the test Dockerfile minimal
+— BDD runner and HTTP client only.
 
 #### 7. Add a placeholder extended test Dockerfile
 
