@@ -33,7 +33,7 @@ Core Platform Path to Production (P2P) is driven by GitHub Actions workflows in 
 - `p2p/config/extended-test.yaml` contains extended-test-stage overrides.
 - `p2p/config/prod.yaml` contains production overrides.
 - Stage-specific files should only contain differences from `common.yaml`.
-- `app.yaml` controls ingress through `config.ingress.enabled`; it is disabled by default. Service tests always use `SERVICE_ENDPOINT`, while ingress-specific scenarios use `INGRESS_ENDPOINT` when available and skip otherwise.
+- `app.yaml` controls ingress through `config.ingress.enabled`; deployment configuration reads this boolean directly. All automated tests use Service endpoints, including NFT. Optional ingress scenarios are disabled; browser routing is verified separately. Corectl prepares `P2P_INGRESS_DOMAIN` and `P2P_INGRESS_CLASS` for target-specific deployment settings.
 
 ### Tests
 
