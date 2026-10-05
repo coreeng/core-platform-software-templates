@@ -29,11 +29,12 @@ for template in docker/web go/web java/web nextjs/web python/web static/nextra; 
   mkdir -p "$directory/p2p"
   cp "$template/skeleton/Makefile" "$directory/Makefile"
   cp -r "$template/skeleton/p2p/config" "$directory/p2p/config"
-  for mode in LOCAL_HTTP EXISTING_INGRESS DISABLED LEGACY; do
+  for mode in LOCAL_HTTP EXISTING_INGRESS DISABLED UNCONFIGURED LEGACY; do
     domain=trial.localhost class=traefik enabled=true
     case "$mode" in
       EXISTING_INGRESS) domain=apps.example.com class=nginx ;;
       DISABLED) enabled=false domain= class= ;;
+      UNCONFIGURED) domain= class= ;;
       LEGACY) domain=legacy.example.com class= ;;
     esac
     printf 'config:\n  ingress:\n    enabled: %s\n' "$enabled" > "$directory/app.yaml"
@@ -55,4 +56,4 @@ for template in docker/web go/web java/web nextjs/web python/web static/nextra; 
     echo "FAIL: $template contains ingress-specific Make logic or preparation coupling" >&2; exit 1
   fi
 done
-printf 'P2P environment Make contracts passed for six templates, five stages and four modes\n'
+printf 'P2P environment Make contracts passed for six templates, five stages and five modes\n'
