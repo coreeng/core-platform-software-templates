@@ -1,0 +1,31 @@
+{% raw %}
+{{- if .Values.tests.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.tests.stage }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  template:
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: browser
+          image: "{{ .Values.tests.image.repository }}:{{ .Values.tests.image.tag }}"
+          env:
+            - name: SERVICE_ENDPOINT
+              value: "http://{{ .Values.frontend.fullnameOverride }}:3000"
+            - name: BACKEND_ENDPOINT
+              value: "http://{{ .Values.backend.fullnameOverride }}:8080"
+            - name: TEST_STAGE
+              value: {{ .Values.tests.stage | quote }}
+          resources:
+            requests: { cpu: 1000m, memory: 1024Mi }
+            limits: { cpu: 2000m, memory: 2048Mi }
+{{- end }}
+{% endraw %}

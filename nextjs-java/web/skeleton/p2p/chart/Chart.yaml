@@ -1,0 +1,14 @@
+apiVersion: v2
+name: notes
+version: 0.1.0
+type: application
+description: Isolated Next.js Java PostgreSQL notes proof
+dependencies:
+  - name: core-platform-app
+    alias: frontend
+    version: 0.18.0
+    repository: https://coreeng.github.io/core-platform-assets
+  - name: core-platform-app
+    alias: backend
+    version: 0.18.0
+    repository: https://coreeng.github.io/core-platform-assets

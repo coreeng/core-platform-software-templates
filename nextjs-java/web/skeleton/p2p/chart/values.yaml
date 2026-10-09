@@ -1,0 +1,53 @@
+frontend:
+  nameOverride: frontend
+  fullnameOverride: {{ name }}-frontend
+  tenantName: {{ tenant }}
+  replicaCount: 1
+  image: { repository: notes-frontend, tag: proof, pullPolicy: IfNotPresent }
+  service: { port: 3000 }
+  serviceAccount: { automount: false }
+  envVarsMap:
+    BACKEND_URL: http://{{ name }}-backend:8080
+  metrics: { enabled: true, port: 8081, path: /metrics }
+  readinessProbe: { httpGet: { path: /readyz, port: 3000 } }
+  livenessProbe: { httpGet: { path: /livez, port: 3000 } }
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { cpu: 1000m, memory: 512Mi }
+  ingress: { enabled: false }
+  autoscaling: { enabled: false }
+  verticalPodAutoscaler: { enabled: false }
+backend:
+  nameOverride: backend
+  fullnameOverride: {{ name }}-backend
+  tenantName: {{ tenant }}
+  replicaCount: 1
+  image: { repository: notes-backend, tag: proof, pullPolicy: IfNotPresent }
+  service: { port: 8080 }
+  serviceAccount: { automount: false }
+  envVarsMap:
+    DB_URL: jdbc:postgresql://{{ name }}-postgres:5432/notes
+  envVarsArr:
+    - name: DB_USERNAME
+      valueFrom: { secretKeyRef: { name: {{ name }}-database, key: username } }
+    - name: DB_PASSWORD
+      valueFrom: { secretKeyRef: { name: {{ name }}-database, key: password } }
+  metrics: { enabled: true, port: 8081, path: /prometheus }
+  startupProbe: { httpGet: { path: /health, port: 8081 }, failureThreshold: 60, periodSeconds: 5 }
+  readinessProbe: { httpGet: { path: /health, port: 8081 } }
+  livenessProbe: { httpGet: { path: /health, port: 8081 } }
+  resources:
+    requests: { cpu: 100m, memory: 1024Mi }
+    limits: { cpu: 1000m, memory: 1024Mi }
+  ingress: { enabled: false }
+  autoscaling: { enabled: false }
+  verticalPodAutoscaler: { enabled: false }
+database:
+  name: {{ name }}-postgres
+  secretName: {{ name }}-database
+  image: docker.io/postgres:18.0-bookworm
+  storage: 1Gi
+tests:
+  enabled: true
+  stage: functional
+  image: { repository: notes-functional, tag: proof }

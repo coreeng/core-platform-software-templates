@@ -1,0 +1,53 @@
+{% raw %}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.database.name }}
+spec:
+  clusterIP: None
+  selector: { notes-database: {{ .Values.database.name }} }
+  ports: [{ port: 5432, targetPort: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.database.name }}
+spec:
+  replicas: 1
+  serviceName: {{ .Values.database.name }}
+  selector:
+    matchLabels: { notes-database: {{ .Values.database.name }} }
+  template:
+    metadata:
+      labels: { notes-database: {{ .Values.database.name }} }
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgres
+          image: {{ .Values.database.image | quote }}
+          ports: [{ containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_DB, value: notes }
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.database.secretName }}, key: username }
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: {{ .Values.database.secretName }}, key: password }
+          readinessProbe:
+            exec: { command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d notes"] }
+          livenessProbe:
+            exec: { command: ["sh", "-c", "pg_isready -U \"$POSTGRES_USER\" -d notes"] }
+            initialDelaySeconds: 30
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 1000m, memory: 512Mi }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: {{ .Values.database.storage }}
+{% endraw %}

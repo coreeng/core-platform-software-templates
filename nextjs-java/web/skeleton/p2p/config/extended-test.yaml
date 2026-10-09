@@ -1,0 +1,1 @@
+tests: { enabled: true, stage: extended }
