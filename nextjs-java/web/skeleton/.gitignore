@@ -1,0 +1,10 @@
+frontend/node_modules/
+frontend/.yarn/
+frontend/.next/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+backend/.gradle/
+backend/build/
+p2p/tests/node_modules/
+p2p/tests/.yarn/
+.p2p/

@@ -1,0 +1,26 @@
+---
+name: nextjs-java-web
+description: Next.js and Java PostgreSQL notes proof application
+kind: app
+skeletonPath: ./skeleton
+config:
+  replicas: 1
+  ingress:
+    enabled: false
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 1
+    targetCPUUtilizationPercentage: 80
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 300
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1024Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
