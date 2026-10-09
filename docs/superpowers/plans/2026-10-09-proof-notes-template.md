@@ -13,38 +13,38 @@ Helm, Playwright, existing Gradle wrapper and Yarn conventions.
 
 ## 1. Establish failing application contracts
 
-- [ ] Add `tests/nextjs_java_template_test.sh` and render helper
+- [x] Add `tests/nextjs_java_template_test.sh` and render helper
   `tests/render_nextjs_java.py` before creating the template.
-- [ ] Run `bash tests/nextjs_java_template_test.sh`; require failure for the missing
+- [x] Run `bash tests/nextjs_java_template_test.sh`; require failure for the missing
   template rather than a broken test environment.
-- [ ] Cover valid rendered names, canonical lockfiles, application image inventory,
+- [x] Cover valid rendered names, canonical lockfiles, application image inventory,
   stage test images, caller namespaces, credential scoping and Helm/Jinja escaping.
 
 ## 2. Implement the generated application
 
-- [ ] Create `nextjs-java/web/template.yaml` with the current metadata/schema shape.
-- [ ] Create `skeleton/frontend/` with a notes form/list, same-origin API proxy,
+- [x] Create `nextjs-java/web/template.yaml` with the current metadata/schema shape.
+- [x] Create `skeleton/frontend/` with a notes form/list, same-origin API proxy,
   runtime probes/metrics, unit tests, canonical lockfile and Dockerfile.
-- [ ] Create `skeleton/backend/` with copied pinned Gradle wrapper, Java API,
+- [x] Create `skeleton/backend/` with copied pinned Gradle wrapper, Java API,
   validation, JDBC repository, Flyway migration, unit tests and Dockerfile.
-- [ ] Test empty/null, 1/200/201-character bodies and Unicode length equivalence;
+- [x] Test empty/null, 1/200/201-character bodies and Unicode length equivalence;
   ensure invalid input cannot reach persistence and backend errors fail requests.
 
 ## 3. Implement release and ordinary P2P targets
 
-- [ ] Create `skeleton/p2p/chart/` with exact-version frontend/backend dependencies,
+- [x] Create `skeleton/p2p/chart/` with exact-version frontend/backend dependencies,
   PostgreSQL PVC/workload, scoped Secret and real browser-test Helm Jobs.
-- [ ] Create stage values and Make build/deploy/test targets; preserve ordinary CI
+- [x] Create stage values and Make build/deploy/test targets; preserve ordinary CI
   namespace/version bindings and use only an explicit local portability fixture.
-- [ ] List frontend/backend in `P2P_IMAGE_NAMES`; stage suffixes keep ephemeral test
+- [x] List frontend/backend in `P2P_IMAGE_NAMES`; stage suffixes keep ephemeral test
   images outside production promotion. Functional verification must not scale down
   the application or delete PostgreSQL/PVCs. NFT must not report synthetic success.
 
 ## 4. Add owned local verification and coordinate shared targets
 
-- [ ] Create `tests/nextjs_java_local.py` for normal Docker build/functional modes,
+- [x] Create `tests/nextjs_java_local.py` for normal Docker build/functional modes,
   unique labelled owned resources, bounded commands and cleanup on failures.
-- [ ] Coordinate only these additive root targets, without changing existing ones:
+- [x] Coordinate only these additive root targets, without changing existing ones:
 
   ```make
   test-nextjs-java-render:
@@ -55,15 +55,17 @@ Helm, Playwright, existing Gradle wrapper and Yarn conventions.
   	python3 tests/nextjs_java_local.py functional
   ```
 
-- [ ] Add the render check to `templates-validate` and update root layout/pin guidance
-  serially. Run `make templates-validate` and all three new targets.
-- [ ] Functional verification creates/lists/reloads notes, rejects invalid bodies,
+- [x] Add structural-only rendering plus offline runner tests to `templates-validate`
+  and update root layout/pin guidance serially. Keep fixture-required full rendering
+  in `test-nextjs-java-render` so existing CI needs no unpublished sibling helper.
+  Run `make templates-validate` and all three full local targets.
+- [x] Functional verification creates/lists/reloads notes, rejects invalid bodies,
   proves restart persistence and removes only test-owned note IDs.
 
 ## 5. Review, verify and commit locally
 
-- [ ] Independent spec review, then code-quality/security review; fix findings and
+- [x] Independent spec review, then code-quality/security review; fix findings and
   re-review. Record precise checks and any unverified gates.
-- [ ] Re-run affected canonical checks and `git diff --check` after remediation.
-- [ ] Confirm branch is `feature/proof-nextjs-java`, then commit scoped files locally
+- [x] Re-run affected canonical checks and `git diff --check` after remediation.
+- [x] Confirm branch is `feature/proof-nextjs-java`, then commit scoped files locally
   with a standalone description. Do not push, publish or open a PR.

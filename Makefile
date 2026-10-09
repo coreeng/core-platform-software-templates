@@ -39,3 +39,32 @@ templates-validate:
 	@bash tests/security_ignore_test.sh
 	@bash tests/java_template_test.sh
 	@bash tests/nextjs_template_test.sh
+	@$(MAKE) test-nextjs-java-structure
+
+## make test-nextjs-java-structure	Validate notes structure without the unpublished P2P fixture
+.PHONY: test-nextjs-java-structure
+test-nextjs-java-structure:
+	@bash tests/nextjs_java_template_test.sh --pure-render
+	@$(MAKE) test-nextjs-java-runner
+
+## make test-nextjs-java-render		Qualify notes rendering with the local P2P fixture
+.PHONY: test-nextjs-java-render
+test-nextjs-java-render:
+	@bash tests/nextjs_java_template_test.sh
+	@$(MAKE) test-nextjs-java-runner
+
+## make test-nextjs-java-runner		Test disposable notes runner failure and cleanup contracts
+.PHONY: test-nextjs-java-runner
+test-nextjs-java-runner:
+	@test -f tests/nextjs_java_runner_test.py || { echo "Missing notes runner contract tests" >&2; exit 1; }
+	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'nextjs_java_runner_test.py'
+
+## make test-nextjs-java-build		Build notes application and test images with Docker
+.PHONY: test-nextjs-java-build
+test-nextjs-java-build:
+	@python3 tests/nextjs_java_local.py build
+
+## make test-nextjs-java-functional	Run owned disposable notes database/browser tests
+.PHONY: test-nextjs-java-functional
+test-nextjs-java-functional:
+	@python3 tests/nextjs_java_local.py functional

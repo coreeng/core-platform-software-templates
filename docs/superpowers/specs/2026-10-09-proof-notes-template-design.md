@@ -44,6 +44,10 @@ Use the locally reviewed P2P portability fixture through an explicit caller path
 No released helper pin exists yet; an absent fixture fails clearly instead of
 silently downloading an invented revision. Keep ordinary CI stage namespace and
 version behavior. Do not claim released-template or workspace compatibility.
+General repository validation must remain independent of the unpublished sibling
+fixture: run structural rendering and offline runner tests there, explicitly
+leaving P2P contracts unqualified. The separate full local render qualification
+requires and checks the real helper fixture.
 
 ## Verification and ownership
 

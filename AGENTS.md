@@ -12,6 +12,7 @@
 ├── go/web          — Go (Gin) web service
 ├── java/web        — Java (Spring Boot) web service
 ├── nextjs/web      — Next.js web application
+├── nextjs-java/web — Next.js/Java/PostgreSQL notes proof application
 ├── python/web      — Python (FastAPI) web service
 ├── docker/web      — Generic Docker web service (podinfo reference image)
 ├── static/nextra   — Nextra static documentation site
@@ -60,6 +61,29 @@ App templates (`kind: app`) deploy containerised web services. Each contains:
 > Hub for the newest `X.Y.Z-alpineA.B` tag rather than keeping the version already in the template.
 
 #### Complete version-pin inventory
+
+The independent `nextjs-java/web` proof template has its own complete pin inventory
+in `nextjs-java/web/README.md`. Its frontend follows the Next.js Node/Yarn pins;
+its backend follows the Java Gradle/JDK pins; its browser runner pins Playwright
+and the matching browser image. The umbrella chart pins both `core-platform-app`
+dependencies and PostgreSQL. Update and verify these together with
+`make test-nextjs-java-render`, `make test-nextjs-java-build` and
+`make test-nextjs-java-functional`. Dependency downloads must not rewrite the
+committed lockfiles during immutable installs.
+`make test-nextjs-java-runner` covers offline failure, interruption and cleanup
+contracts and is included by the render gate.
+General `templates-validate` uses `test-nextjs-java-structure` (structural rendering
+plus offline runner tests), without requiring the unpublished helper in CI.
+`test-nextjs-java-render` is the separate fixture-required local qualification gate;
+structural success alone must not be reported as passing P2P stage contracts.
+
+This proof template requires an explicit local P2P portability fixture until a
+reviewed helper release exists. Do not substitute a guessed released pin or claim
+workspace compatibility. Root validation-target changes are coordinated separately
+from ownership of the new template and its tests. Live GitHub delivery stages,
+publication and workspace builder qualification require separate approval.
+For this proof slice, reviewed and verified changes are committed locally only:
+do not push or open a PR without separate approval.
 
 Every hardcoded version in the app templates. Use this as a completion checklist when updating.
 
@@ -368,6 +392,11 @@ Notable caveats:
 ### Adding a new app template
 
 Use `go/web` as the reference.
+
+The `nextjs-java/web` independent proof slice is an explicit exception to the
+live-cluster delivery checks below: run its canonical render and ordinary Docker
+checks, but do not run live GitHub Fast Feedback, Extended Test or Prod stages
+until separately authorised. Local verification does not complete those gates.
 
 #### 1. Create `template.yaml`
 
