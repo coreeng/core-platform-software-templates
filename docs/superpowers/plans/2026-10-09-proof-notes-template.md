@@ -47,12 +47,13 @@ Helm, Playwright, existing Gradle wrapper and Yarn conventions.
 - [x] Coordinate only these additive root targets, without changing existing ones:
 
   ```make
+  .RECIPEPREFIX := >
   test-nextjs-java-render:
-  	bash tests/nextjs_java_template_test.sh
+  >bash tests/nextjs_java_template_test.sh
   test-nextjs-java-build:
-  	python3 tests/nextjs_java_local.py build
+  >python3 tests/nextjs_java_local.py build
   test-nextjs-java-functional:
-  	python3 tests/nextjs_java_local.py functional
+  >python3 tests/nextjs_java_local.py functional
   ```
 
 - [x] Add structural-only rendering plus offline runner tests to `templates-validate`
