@@ -73,6 +73,18 @@ for template in "${app_templates[@]}"; do
         failures=$((failures + 1))
       fi
       ;;
+    java/web)
+      if ! grep -R -q 'INGRESS_ENDPOINT' "$test_directory" || ! grep -R -q 'assumeTrue("Ingress is disabled"' "$test_directory"; then
+        printf 'FAIL: %s: ingress scenarios must skip when ingress is disabled\n' "$test_directory"
+        failures=$((failures + 1))
+      fi
+      ;;
+    nextjs/web|static/nextra)
+      if ! grep -R -q 'INGRESS_ENDPOINT' "$test_directory" || ! grep -R -q 'return "skipped"' "$test_directory"; then
+        printf 'FAIL: %s: ingress scenarios must skip when ingress is disabled\n' "$test_directory"
+        failures=$((failures + 1))
+      fi
+      ;;
     python/web)
       if ! grep -R -q 'INGRESS_ENDPOINT' "$test_directory" || ! grep -R -q 'scenario.skip("Ingress is disabled")' "$test_directory"; then
         printf 'FAIL: %s: ingress scenarios must skip when ingress is disabled\n' "$test_directory"
