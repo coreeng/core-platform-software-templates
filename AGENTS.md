@@ -81,11 +81,11 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `java/web` | `p2p/tests/integration/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
 | `java/web` | `p2p/tests/integration/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` | matches main Dockerfile |
 | `nextjs/web` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
-| `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
+| `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B`, runtime `libstdc++`/`libatomic` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `nextjs/web` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
 | `nextjs/web` | `p2p/tests/functional/Dockerfile` | Node image, Playwright image, Yarn | matches the app runtime, `@playwright/test`, and `packageManager` |
 | `static/nextra` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
-| `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
+| `static/nextra` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B`, runtime `libstdc++`/`libatomic` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `static/nextra` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
 | `static/nextra` | `p2p/tests/functional/Dockerfile` | Node image, Playwright image, Yarn | matches the app runtime, `@playwright/test`, and `packageManager` |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
@@ -327,6 +327,12 @@ grep -rl '{{' "$tmpdir" | while IFS= read -r f; do
 done
 docker build -t myapp-test "$tmpdir"
 ```
+
+For `nextjs/web` and `static/nextra`, validate the minimal Node runtime on Linux AMD64
+as well as the local architecture. The AMD64 Node binary requires `libatomic.so.1`;
+copying only `node` from the build image requires installing both `libstdc++` and
+`libatomic` in the Alpine runtime. `make templates-validate` runs the AMD64 binary
+loading regression check; set `TEMPLATE_TEST_PLATFORM=linux/arm64` to check ARM64 too.
 
 Each template exposes different ports and health endpoints:
 
