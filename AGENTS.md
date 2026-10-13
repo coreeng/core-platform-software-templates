@@ -72,14 +72,14 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `go/web` | `p2p/tests/functional/Dockerfile` | `golang:X.Y.Z-alpineA.B` | matches `functional/go.mod` |
 | `go/web` | `p2p/tests/integration/go.mod` | Go version, all deps including `godog` | `go get -u` |
 | `go/web` | `p2p/tests/integration/Dockerfile` | `golang:X.Y.Z-alpineA.B` | matches `integration/go.mod` |
-| `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-noble` in Dockerfile; regenerate all wrapper files (see below) |
+| `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-<distro>` in Dockerfile; regenerate all wrapper files (see below) |
 | `java/web` | `skeleton/.java-version` | Local JDK version | matches `sourceCompatibility`, build image, and runtime image |
 | `java/web` | `skeleton/service/build.gradle` | Spring Boot, Spring DM, SpringDoc, Guava, HikariCP, `sourceCompatibility`/`targetCompatibility` | [spring.io](https://spring.io/projects/spring-boot), Maven Central |
-| `java/web` | `skeleton/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` (build), `eclipse-temurin:NN-jre-noble` (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
+| `java/web` | `skeleton/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` (build), `eclipse-temurin:NN-jre-<distro>` (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
 | `java/web` | `p2p/tests/functional/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
-| `java/web` | `p2p/tests/functional/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` | matches main Dockerfile |
+| `java/web` | `p2p/tests/functional/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` | matches main Dockerfile |
 | `java/web` | `p2p/tests/integration/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
-| `java/web` | `p2p/tests/integration/Dockerfile` | `gradle:X.Y.Z-jdkNN-noble` | matches main Dockerfile |
+| `java/web` | `p2p/tests/integration/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` | matches main Dockerfile |
 | `nextjs/web` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
 | `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `nextjs/web` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
@@ -89,6 +89,7 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `static/nextra` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
 | `static/nextra` | `p2p/tests/functional/Dockerfile` | Node image, Playwright image, Yarn | matches the app runtime, `@playwright/test`, and `packageManager` |
 | `python/web` | `skeleton/pyproject.toml` | all Python deps | `uv lock` |
+| `python/web` | `skeleton/Makefile` (`lint-app`), `skeleton/ruff.toml` | Ruff image, Python lint target | matches the dev dependency and Python runtime |
 | `python/web` | `skeleton/uv.lock` | locked Python deps | `uv lock` |
 | `python/web` | `skeleton/Dockerfile` | `python:X.Y-slim` (both stages), `docker.io/astral/uv:X.Y.Z` | matches `requires-python`; [astral-sh/uv releases](https://github.com/astral-sh/uv/releases) |
 | `python/web` | `p2p/tests/functional/Dockerfile` | `python:X.Y-slim`, `behave`, `requests` | match main Dockerfile; pin behave/requests |
@@ -109,7 +110,7 @@ that contains dependency files for that template.
 
 ```bash
 cd go/web/skeleton
-go get -u ./...
+go get -u -t ./...
 go mod tidy
 ```
 
@@ -117,11 +118,14 @@ Update each test module (replace `X.Y.Z` with the Go version from the main `go.m
 
 ```bash
 for dir in p2p/tests/functional p2p/tests/integration; do
-  (cd go/web/skeleton/"$dir" && go get -u ./... && go mod edit -go=X.Y.Z && go mod tidy)
+  (cd go/web/skeleton/"$dir" && go get -u -t ./... && go mod edit -go=X.Y.Z && go mod tidy)
 done
 ```
 
-Update all image and version pins from the inventory table. Godog is linked into the compiled test executable using the version in each test module's `go.mod`.
+Update all image and version pins from the inventory table. The `-t` flag also updates
+dependencies imported only by `_test.go` files. Without it,
+test-only modules can retain old dependency versions. Godog is linked into the compiled
+test executable using the version in each test module's `go.mod`.
 
 #### java/web
 
@@ -129,8 +133,8 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.8.0-jdk26-noble gradle wrapper --gradle-version 9.8.0 \
-  --gradle-distribution-sha256-sum bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c
+  docker.io/gradle:9.8.1-jdk27-resolute gradle wrapper --gradle-version 9.8.1 \
+  --gradle-distribution-sha256-sum dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f
 ```
 
 This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
@@ -147,10 +151,13 @@ Also update test dependencies in `p2p/tests/functional/build.gradle` and
 Spring Boot BOM: JUnit BOM, Cucumber, REST Assured, JSONAssert.
 
 When upgrading the JDK version (e.g. 21 → 25), also update `sourceCompatibility` and
-`targetCompatibility` in `build.gradle` to match, and update the `gradle:X.Y.Z-jdkNN-noble`
-build image and `eclipse-temurin:NN-jre-noble` runtime image in `skeleton/Dockerfile` and the
-test Dockerfiles to the same JDK version. Gradle 9+ has no alpine variant for JDK 25 — use
-`-noble` (Ubuntu) instead.
+`targetCompatibility` in `build.gradle` to match, and update the `gradle:X.Y.Z-jdkNN-<distro>`
+build image and `eclipse-temurin:NN-jre-<distro>` runtime image in `skeleton/Dockerfile` and the
+test Dockerfiles to the same JDK version. Verify the distro suffix exists for the
+selected JDK and use it consistently in build
+and runtime images. JDK 27 uses `-resolute` (Ubuntu 26.04); the previous Noble package
+revision pins must not be carried into Resolute. Apply available OS package updates and
+verify them with the image security scan.
 
 #### nextjs/web
 
@@ -194,12 +201,22 @@ yarn install
 
 Keep `yarn.lock` committed. `nextjs/web` uses Yarn 4 immutable installs; `static/nextra`
 continues to use Yarn 1 frozen-lockfile installs.
+When regenerating a nested Yarn 4 test module, recreate an empty `yarn.lock` before
+`yarn install` so Yarn treats it as an independent project. Keep the Nextra parent
+package name valid until both its root and functional test installs finish.
+
+> **Toolchain compatibility (2026-10-13):** Next.js 16.4.0 uses a TypeScript ESLint
+> stack that rejects TypeScript 7, and its ESLint plugins require ESLint 9. Keep
+> TypeScript on the latest supported 6.x release (6.0.3) in applications and Cucumber
+> modules, and ESLint on the latest supported 9.x release (9.39.5). Re-test newer
+> majors only when the framework and test tooling support them.
 
 > **Known Nextra issue:** Do not upgrade `static/nextra` from `nextra`/`nextra-theme-docs`
 > `4.6.0` to `4.6.1` unless the upstream issue is fixed or you have a template code fix.
 > The upgrade has been tested and causes `next build` to fail while prerendering
 > `/_not-found` with digest `1872370934`, including when adding an explicit plain
-> `src/app/not-found.tsx`. Keep `static/nextra` on `4.6.0` until a smoke test proves a
+> `src/app/not-found.tsx`. Reproduced on 2026-10-13 with Next.js 16.4.0. Keep
+> `static/nextra` on `4.6.0` until a smoke test proves a
 > newer version builds successfully.
 
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
@@ -239,6 +256,9 @@ sed -i '/source = { editable = "\." }/{x;s/name = "app"/name = "{{ name }}"/;x}'
 Update `skeleton/Dockerfile`: `python:X.Y-slim` (both stages), `docker.io/astral/uv:X.Y.Z` —
 match to `requires-python` in `pyproject.toml`.
 
+Update the Ruff image in `skeleton/Makefile` to match the `ruff` dev dependency,
+and the Python target in `ruff.toml` to match `requires-python`.
+
 Also update `behave` and `requests` versions in the functional/integration test Dockerfile
 `pip install` line; match `python:X.Y-slim` to the main Dockerfile.
 
@@ -257,7 +277,7 @@ Update each test module (replace `X.Y.Z` with the same Go version used in `go/we
 
 ```bash
 for dir in p2p/tests/functional p2p/tests/integration p2p/tests/extended; do
-  (cd docker/web/skeleton/"$dir" && go get -u ./... && go mod edit -go=X.Y.Z && go mod tidy)
+  (cd docker/web/skeleton/"$dir" && go get -u -t ./... && go mod edit -go=X.Y.Z && go mod tidy)
 done
 ```
 
@@ -355,7 +375,7 @@ Notable caveats:
 
 | Template | Stage | Base image | Notes |
 |---|---|---|---|
-| `java/web` | functional, integration | `gradle:X.Y.Z-jdkNN-noble` | slow on first run (downloads Gradle wrapper + all deps) |
+| `java/web` | functional, integration | `gradle:X.Y.Z-jdkNN-<distro>` | slow on first run (downloads Gradle wrapper + all deps) |
 | `nextjs/web`, `static/nextra` | functional | `mcr.microsoft.com/playwright:vX.Y.Z-noble` | large image (~1.5 GB) |
 | `docker/web` | functional, integration, extended | `golang:X.Y.Z-trixie` | Go-based BDD tests (note `-trixie`, not `-alpine`) |
 | **all** | nft | `golang:X.Y.Z-alpineA.B` | builds custom k6 binary with `xk6-prometheus` |
@@ -530,9 +550,29 @@ Each contains:
 
 ### Updating infra template versions
 
-> **TODO:** Add instructions for updating OpenTofu, Terragrunt, and provider versions across
-> infra templates — editing `versions.tf` and regenerating `.terraform.lock.hcl` via
-> `tofu init -upgrade`.
+Update all four infra templates together. Verify stable upstream releases and update:
+
+- `skeleton/Dockerfile`: OpenTofu, Terragrunt, jq, yq, and any gcloud CLI or Cloud SQL proxy pins.
+- `infrastructure/code/versions.tf` and `terragrunt.hcl`: the OpenTofu minimum version.
+- `versions.tf`: provider versions available in the registry used by the template.
+- Module version pins under `infrastructure/code/modules/`.
+
+The default provider registry is `registry.opentofu.org`; a newer GitHub or Terraform
+registry release may not yet be published there. As of 2026-10-13, Google and Google
+Beta 8.6.0 are the newest versions it publishes (8.7.0 does not resolve there).
+
+For each template, regenerate the lockfile and all supported-platform checksums:
+
+```bash
+cd infra/<template>/skeleton/infrastructure
+make infra-init-upgrade
+```
+
+Validate with `tofu init -backend=false` followed by `tofu validate`, and run
+`tofu fmt -check -recursive` and `terragrunt hcl fmt --check`. Build each runner image
+from a rendered throwaway copy and smoke-test `tofu version`, `terragrunt --version`,
+`jq --version`, `yq --version`, plus any template-specific tools. Do not run an apply
+or destroy as part of a dependency update.
 
 ### Adding a new infra template
 
