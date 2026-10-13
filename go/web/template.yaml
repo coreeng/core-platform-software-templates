@@ -16,7 +16,8 @@ config:
       scaleDown:
         stabilizationWindowSeconds: 300
   ingress:
-    enabled: false
+    enabled: true
+    type: portal
   resources:
     requests:
       cpu: 50m

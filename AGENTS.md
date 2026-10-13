@@ -40,7 +40,7 @@ substituted:
 
 App templates (`kind: app`) deploy containerised web services. Each contains:
 
-- `template.yaml` — `kind: app`, replica count, CPU/memory requests and limits, autoscaling defaults, and an ingress toggle that defaults to disabled
+- `template.yaml` — `kind: app`, replica count, CPU/memory requests and limits, autoscaling defaults, and ingress defaults (`enabled: true`, `type: portal`)
 - `skeleton/Makefile` — P2P targets: `p2p-build`, `p2p-functional`, `p2p-nft`, `p2p-integration`, `p2p-extended-test`, `p2p-prod`
 - `skeleton/.github/workflows/` — `fast-feedback.yaml`, `extended-test.yaml`, `prod.yaml`
 - `skeleton/p2p/config/` — Helm config per P2P stage (`common.yaml` + per-stage overrides)
@@ -389,7 +389,8 @@ config:
       scaleDown:
         stabilizationWindowSeconds: 300
   ingress:
-    enabled: false
+    enabled: true
+    type: portal
   resources:
     requests:
       cpu: 50m
@@ -446,8 +447,10 @@ Every app template exposes two ports:
 | 8081 | Internal ops (`GET /metrics`, `GET /internal/status`) | No |
 
 The port separation prevents metrics and health endpoints from being accidentally exposed
-publicly. Ingress must remain disabled by default; generated repositories can opt in by setting
-`config.ingress.enabled: true` in `app.yaml`. The `/hello` endpoint must return a body containing
+publicly. New application templates default to Portal ingress through `config.ingress.enabled: true`
+and `config.ingress.type: portal` in `app.yaml`. Portal access requires sign-in and Context
+access; `enabled: false` removes application ingress. Explicit `public` ingress retains
+configured chart hosts, class, DNS, TLS and ingress tests; Public access remains unavailable in Portal creation. The `/hello` endpoint must return a body containing
 `"Hello world"` — this is what the K6 NFT script asserts.
 
 Use the framework's lightest available Prometheus metrics library. Avoid per-request
@@ -460,8 +463,12 @@ stage or test target per template rather than relying on a fixed CPU-per-replica
 Copy the Gherkin feature files from `go/web` (the scenarios are language-agnostic HTTP
 checks). Use the language's standard Cucumber library. Service scenarios must always use
 `SERVICE_ENDPOINT`. Ingress scenarios must use `INGRESS_ENDPOINT` when available and be skipped
-when ingress is disabled. The NFT Helm value must select `ingress` or `service` from
-`config.ingress.enabled`. Keep the test Dockerfile minimal — BDD runner and HTTP client only.
+when no `INGRESS_ENDPOINT` is provided. The shared chart forces Service-based tests for
+Portal ingress, including NFT.
+Forward `config.ingress.type` in `common.yaml`; the Makefile passes the P2P-resolved
+hostname only for `portal`; the chart selects its ingress class. Do not construct a Portal hostname
+from `BASE_DOMAIN` or override public chart values with allocated Portal metadata.
+Keep the test Dockerfile minimal — BDD runner and HTTP client only.
 
 #### 7. Add a placeholder extended test Dockerfile
 

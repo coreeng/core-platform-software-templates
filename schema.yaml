@@ -23,6 +23,7 @@ config:
         stabilizationWindowSeconds: int(min=0)
   ingress:
     enabled: bool()
+    type: enum('portal', 'public', required=False)
   resources:
     requests:
       cpu: str()
