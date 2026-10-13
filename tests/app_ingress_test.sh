@@ -21,11 +21,11 @@ for template in "${app_templates[@]}"; do
   if ! awk '
     $0 == "  ingress:" {
       getline
-      if ($0 == "    enabled: false") found = 1
+      if ($0 == "    enabled: true") { getline; if ($0 == "    type: portal") found = 1 }
     }
     END { exit(found ? 0 : 1) }
   ' "$template_file"; then
-    printf 'FAIL: %s: config.ingress.enabled must default to false\n' "$template_file"
+    printf 'FAIL: %s: config.ingress must default to enabled Portal access\n' "$template_file"
     failures=$((failures + 1))
   fi
 
@@ -39,6 +39,27 @@ for template in "${app_templates[@]}"; do
     printf 'FAIL: %s: ingress.enabled must use the app.yaml config value\n' "$common_values"
     failures=$((failures + 1))
   fi
+
+  # shellcheck disable=SC2016
+  if ! grep -qF 'type: "${p2p_app_config_ingress_type}"' "$common_values" || grep -q 'P2P_INGRESS_' "$common_values"; then
+    printf 'FAIL: %s: common values must preserve type without allocated Portal metadata\n' "$common_values"
+    failures=$((failures + 1))
+  fi
+  # shellcheck disable=SC2016
+  if ! grep -qF 'p2p_portal_ingress_args = $(if $(filter portal,$(p2p_app_config_ingress_type)),' "$makefile" || ! grep -qF '$(p2p_portal_ingress_args)' "$makefile"; then
+    printf 'FAIL: %s: allocated ingress metadata must apply only to Portal\n' "$makefile"
+    failures=$((failures + 1))
+  fi
+  if ! grep -qF 'https://raw.githubusercontent.com/coreeng/p2p/v1/p2p.mk' "$makefile"; then
+    printf 'FAIL: %s: p2p.mk must follow the v1 contract\n' "$makefile"
+    failures=$((failures + 1))
+  fi
+  for workflow in "$template"/skeleton/.github/workflows/*.yaml; do
+    if ! awk '/uses: coreeng\/p2p\// { found = 1; if ($NF !~ /@v1$/) invalid = 1 } END { exit(!found || invalid) }' "$workflow"; then
+      printf 'FAIL: %s: reusable P2P workflows must use @v1\n' "$workflow"
+      failures=$((failures + 1))
+    fi
+  done
 
   if ! grep -R -q 'SERVICE_ENDPOINT' "$test_directory"; then
     printf 'FAIL: %s: tests must target the in-cluster service\n' "$test_directory"
