@@ -1,0 +1,50 @@
+{
+  "p2p_commit": "aa1278b53ce1b1fa9d5409f58d5b921e4599a32d",
+  "versions": {
+    "trivy": "0.75.0",
+    "trufflehog": "3.99.0",
+    "codeql": "2.27.3"
+  },
+  "assets": {
+    "linux-amd64": {
+      "trivy": {
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-64bit.tar.gz",
+        "sha256": "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
+      },
+      "trufflehog": {
+        "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.0/trufflehog_3.99.0_linux_amd64.tar.gz",
+        "sha256": "e35ae3fd1e4b7a0c1699d0fda1814282bf906d03379bd4337b092b3a84c6740b"
+      }
+    },
+    "linux-arm64": {
+      "trivy": {
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_Linux-ARM64.tar.gz",
+        "sha256": "a1ee9f6ffb7d112b64ff726a2a0717c21175c1114361391f4a132956751a13b3"
+      },
+      "trufflehog": {
+        "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.0/trufflehog_3.99.0_linux_arm64.tar.gz",
+        "sha256": "ad6fb802f0e6f097829c1eee659b97fc0533a08fa34633cde15bc8fc3258dfb7"
+      }
+    },
+    "darwin-amd64": {
+      "trivy": {
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-64bit.tar.gz",
+        "sha256": "291edaa9778acbe4693d067b5ad60ee11570e5ac68296e85595417528ca641e4"
+      },
+      "trufflehog": {
+        "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.0/trufflehog_3.99.0_darwin_amd64.tar.gz",
+        "sha256": "96eea7bda1969c51e3eb8fa0e7659a9cc1ffa975393a7732498d2e8d20c63060"
+      }
+    },
+    "darwin-arm64": {
+      "trivy": {
+        "url": "https://github.com/aquasecurity/trivy/releases/download/v0.75.0/trivy_0.75.0_macOS-ARM64.tar.gz",
+        "sha256": "4a77108cccf8e55c8d6823e1e759939a622277e66cd0daa3c1fc621ed69e4568"
+      },
+      "trufflehog": {
+        "url": "https://github.com/trufflesecurity/trufflehog/releases/download/v3.99.0/trufflehog_3.99.0_darwin_arm64.tar.gz",
+        "sha256": "9f33b39458d3e3dba69867cd85bcd1df9a6a52083495ed770eb9f42b4e2a63a9"
+      }
+    }
+  }
+}
