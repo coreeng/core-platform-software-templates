@@ -1,0 +1,108 @@
+name: Template security
+
+on:
+  pull_request:
+    branches: [main, codex/security-build-audit]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    outputs:
+      templates: ${{ steps.matrix.outputs.templates }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+      - run: make security-setup security-test
+      - id: matrix
+        run: echo "templates=$(make --silent security-list)" >> "$GITHUB_OUTPUT"
+
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+      - run: make security-setup security-tools
+      - name: Scan rendered source, dependencies and licenses
+        run: make security-source
+      - name: Scan repository history for secrets
+        if: ${{ !cancelled() }}
+        run: make security-history
+      - name: Upload reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: source-security
+          path: .security/reports/
+          retention-days: 14
+          if-no-files-found: error
+
+  images:
+    needs: inventory
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        template: ${{ fromJSON(needs.inventory.outputs.templates) }}
+    env:
+      SECURITY_TEMPLATE: ${{ matrix.template }}
+      SECURITY_PLATFORM: linux/amd64
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+      - uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: default-load=true
+      - run: make security-setup security-tools
+      - run: make security-build
+      - name: Scan built images
+        if: ${{ !cancelled() }}
+        run: make security-images
+      - name: Name artifact
+        if: ${{ !cancelled() }}
+        id: artifact
+        run: echo "name=${SECURITY_TEMPLATE//\//-}" >> "$GITHUB_OUTPUT"
+      - name: Upload reports and build evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: security-${{ steps.artifact.outputs.name }}
+          path: |
+            .security/reports/
+            .security/builds.json
+            .security/inventory.json
+            .security/logs/
+          retention-days: 14
+          if-no-files-found: error
