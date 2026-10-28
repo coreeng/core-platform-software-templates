@@ -33,7 +33,7 @@ bits, and leaves the original skeletons unchanged. Builds use the templates'
 |---|---|
 | `make security-list` | Emits a JSON template list for a CI matrix |
 | `make security-render` | Renders clean isolated copies and records inventory |
-| `make security-source` | Scans each rendered template with Trivy vulnerability/license analysis and TruffleHog filesystem secret detection |
+| `make security-source` | Scans rendered templates and the scanner/root workflow sources with Trivy vulnerability/license analysis and TruffleHog filesystem secret detection |
 | `make security-history` | Scans repository history reachable from HEAD for secrets |
 | `make security-build` | Builds all app, infrastructure runner and test images; records image IDs, platforms and input fingerprints |
 | `make security-images` | Scans those immutable image IDs with Trivy and TruffleHog |

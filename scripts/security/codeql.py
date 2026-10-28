@@ -16,6 +16,8 @@ def main():
         raise RuntimeError('Install CodeQL ' + scan.CONFIG['versions']['codeql'] + ' or set CODEQL to its executable')
     items = scan.inventory(os.environ.get('SECURITY_TEMPLATE', ''))
     scan.render(items)
+    if not os.environ.get('SECURITY_TEMPLATE'):
+        items.append(scan.repository_snapshot())
     scan.write(scan.REPORTS / 'codeql.json', {'status': 'running'})
     results = []
     for item in items:

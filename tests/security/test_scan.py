@@ -119,7 +119,7 @@ class CodeQLTests(unittest.TestCase):
                 patch.object(scan, 'REPORTS', Path(temporary) / 'reports'), \
                 patch.object(scan, 'output', return_value='{"version":"2.27.3"}'), \
                 patch.object(scan, 'inventory', return_value=[{'template': 'fixture', 'slug': 'fixture'}]), \
-                patch.object(scan, 'render'), patch.object(scan, 'run', side_effect=execute), \
+                patch.object(scan, 'render'), patch.dict(os.environ, {'SECURITY_TEMPLATE': 'fixture'}), patch.object(scan, 'run', side_effect=execute), \
                 patch.object(scan, 'base_report', return_value={'template': 'fixture', 'target': 'actions'}):
             (Path(temporary) / 'rendered/fixture/.github/workflows').mkdir(parents=True)
             self.assertEqual(codeql.main(), 0)

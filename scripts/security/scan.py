@@ -109,6 +109,27 @@ def render(items):
     write(STATE / 'inventory.json', [{k: v for k, v in x.items() if k != 'files'} for x in items])
 
 
+def repository_snapshot():
+    # Analyze the runner and root workflows too, without rescanning raw Jinja skeletons,
+    # worktrees, caches or reports. Rendered template code is scanned separately.
+    destination = STATE / 'rendered' / 'repository'
+    if destination.exists():
+        shutil.rmtree(destination)
+    destination.mkdir(parents=True)
+    digest = hashlib.sha256()
+    for source in tracked():
+        if '/skeleton/' in source:
+            continue
+        file = ROOT / source
+        if file.is_symlink():
+            raise ValueError(f'Symlink not supported in repository scan: {source}')
+        target = destination / source
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(file, target)
+        digest.update(source.encode() + b'\0' + file.read_bytes())
+    return {'template': 'repository', 'slug': 'repository', 'fingerprint': digest.hexdigest()}
+
+
 def tool(name):
     exe = TOOLS / name
     if not exe.is_file():
@@ -307,6 +328,9 @@ def main():
         render(items)
     if args.command == 'source':
         results += [scan(item, 'source', STATE / 'rendered' / item['slug']) for item in items]
+    if args.command in ('source', 'all') and not args.template:
+        repo_item = repository_snapshot()
+        results.append(scan(repo_item, 'source', STATE / 'rendered' / 'repository'))
     if args.command in ('history', 'all'):
         item = {'template': 'repository', 'slug': 'repository', 'fingerprint': output(['git', 'rev-parse', 'HEAD'], cwd=ROOT)}
         results.append(scan(item, 'history', ROOT, history=True))
