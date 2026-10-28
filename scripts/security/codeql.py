@@ -23,7 +23,7 @@ def main():
     for item in items:
         workspace = scan.STATE / 'rendered' / item['slug']
         scopes = [('actions', workspace)] if (workspace / '.github/workflows').exists() else []
-        for language, patterns in [('javascript-typescript', ['*.js', '*.jsx', '*.ts', '*.tsx', '*.mjs']),
+        for language, patterns in [('javascript-typescript', ['*.js', '*.jsx', '*.ts', '*.tsx', '*.mjs', '*.cjs', '*.mts', '*.cts']),
                                    ('python', ['*.py']), ('java-kotlin', ['*.java', '*.kt'])]:
             if any(any(workspace.rglob(pattern)) for pattern in patterns):
                 scopes.append((language, workspace))

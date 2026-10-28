@@ -122,7 +122,8 @@ class CodeQLTests(unittest.TestCase):
                 patch.object(scan, 'render'), patch.dict(os.environ, {'SECURITY_TEMPLATE': 'fixture'}), patch.object(scan, 'run', side_effect=execute), \
                 patch.object(scan, 'base_report', return_value={'template': 'fixture', 'target': 'actions'}):
             (Path(temporary) / 'rendered/fixture/.github/workflows').mkdir(parents=True)
+            (Path(temporary) / 'rendered/fixture/report.cjs').write_text('module.exports = {};')
             self.assertEqual(codeql.main(), 0)
-            self.assertEqual(len(calls), 2)
+            self.assertEqual(len(calls), 4)
             self.assertIn('--build-mode', calls[0])
             self.assertIn('none', calls[0])
