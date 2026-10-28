@@ -219,6 +219,14 @@ package name valid until both its root and functional test installs finish.
 > `static/nextra` on `4.6.0` until a smoke test proves a
 > newer version builds successfully.
 
+The Nextra template resolves Zod to a patched stable release. Its
+`scripts/patch-nextra.mjs` corrects the 4.6.0 layout's validation of theme
+configuration after `children` has already been extracted. Keep this patch in
+local postinstall and the Docker dependency stage, which otherwise skips install
+scripts. The patch fails when the upstream layout changes so upgrades require
+review. Remove it only after the upstream layout validates the same properties it
+passes to the schema and a production build plus browser smoke test passes.
+
 For `nextjs/web` and `static/nextra` — also update `p2p/tests/functional/package.json` (no
 `{{ name }}` substitution needed; for `static/nextra`, temporarily set the parent
 `package.json` name to a valid value so `yarn install` can run):
