@@ -19,7 +19,10 @@ Implementation sequence:
 4. Validate template definitions, Showcase contracts, existing template checks
    and Node runtime containers.
 
-Adoption requires a compatible P2P v1 release and managed Portal/corectl support.
+For integration testing, all generated P2P workflow references and Makefile
+downloads use the `coreeng/p2p` branch `codex/showcase` from PR #195. They must
+move back to the compatible P2P v1 release before general adoption. Managed
+Portal/corectl support is also required.
 The native new-app wizard enables Showcase automatically with no user toggle;
 other workflow callers retain the default-false contract. Showcase failure fails
 FF; the normal pipeline's tests and promotion dependencies are unchanged.

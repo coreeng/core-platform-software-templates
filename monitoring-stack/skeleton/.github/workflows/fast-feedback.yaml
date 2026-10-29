@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   version:
-    uses: coreeng/p2p/.github/workflows/p2p-version.yaml@v1
+    uses: coreeng/p2p/.github/workflows/p2p-version.yaml@codex/showcase
     with:
       version-prefix: {{ version_prefix }}
     secrets:
@@ -33,7 +33,7 @@ jobs:
       slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
   fastfeedback:
     needs: [version]
-    uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@v1
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-fastfeedback.yaml@codex/showcase
     secrets:
       slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
       env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
