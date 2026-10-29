@@ -3,6 +3,12 @@ name: {{ name }} Fast Feedback
 
 on:
   workflow_dispatch:
+    inputs:
+      showcase:
+        description: Deploy the built application to Showcase
+        type: boolean
+        required: false
+        default: false
   push:
     branches:
       - main
@@ -38,6 +44,7 @@ jobs:
       slack_webhook_url: {% raw %}${{ secrets.P2P_SLACK_WEBHOOK_URL }}{% endraw %}
       env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
     with:
+      showcase: {% raw %}${{ github.event_name == 'workflow_dispatch' && inputs.showcase }}{% endraw %}
       app-name: {{ name }}
       tenant-name: {{ tenant }}
       version: {% raw %}${{ needs.version.outputs.version }}{% endraw %}

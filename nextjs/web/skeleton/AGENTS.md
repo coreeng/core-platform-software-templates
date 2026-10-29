@@ -44,3 +44,12 @@ Core Platform Path to Production (P2P) is driven by GitHub Actions workflows in 
 - Extended tests live in `p2p/tests/extended/` and are intended for longer or higher-load validation than fast feedback.
 
 Keep generated P2P contract changes aligned across `Makefile`, `.github/workflows/`, `p2p/config/`, and `p2p/tests/`.
+
+## Showcase
+
+Dispatch Fast Feedback on main with `showcase=true` to deploy the image from that
+run's successful build to the persistent Showcase environment on the FF cluster.
+The input defaults to false; push and pull-request runs do not deploy Showcase.
+`p2p-showcase` runs `deploy-showcase` without rebuilding or running integration
+tests. Customize `p2p/config/showcase.yaml` for this environment. A Showcase
+failure fails Fast Feedback; the normal pipeline checks still run independently.
