@@ -14,5 +14,12 @@ The native new-app wizard enables it automatically; existing generated repositor
 are unchanged. Deployments use `p2p-showcase: deploy-showcase` and
 `p2p/config/showcase.yaml`, without rebuilding or running integration tests.
 
-Publish compatible Portal/corectl support and the P2P `v1` Showcase workflow
-contract before adopting these generated workflows.
+Generated reusable workflows and Makefile downloads both use P2P `v1`. That
+release must include the Showcase workflow input and Make contract before these
+templates are adopted. Managed Showcase deployments also require Portal and
+corectl support for `p2p targets --showcase`; an older `CORECTL_VERSION` pin must
+be updated before enabling Showcase.
+
+Managed registries use their existing `@refs/tags/v1` workflow trust. No additional
+development-branch grants are required. Remove temporary branch grants after any
+previously generated test repositories have also switched to `v1`.

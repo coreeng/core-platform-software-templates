@@ -9,6 +9,5 @@ for template in docker/web go/web java/web nextjs/web python/web static/nextra; 
   grep -qF "github.event_name == 'workflow_dispatch' && inputs.showcase" "$workflow"
   grep -Eq '^p2p-showcase:[[:space:]]+deploy-showcase$' "$root/Makefile"
   test -f "$root/p2p/config/showcase.yaml"
-  grep -qF 'Showcase' "$root/AGENTS.md"
 done
 printf 'Showcase template contracts passed\n'

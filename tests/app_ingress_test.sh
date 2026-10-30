@@ -50,13 +50,13 @@ for template in "${app_templates[@]}"; do
     printf 'FAIL: %s: allocated ingress metadata must apply only to Portal\n' "$makefile"
     failures=$((failures + 1))
   fi
-  if ! grep -qF 'https://raw.githubusercontent.com/coreeng/p2p/codex/showcase/p2p.mk' "$makefile"; then
-    printf 'FAIL: %s: p2p.mk must follow the codex/showcase contract\n' "$makefile"
+  if ! grep -qF 'https://raw.githubusercontent.com/coreeng/p2p/v1/p2p.mk' "$makefile"; then
+    printf 'FAIL: %s: p2p.mk must follow the v1 contract\n' "$makefile"
     failures=$((failures + 1))
   fi
   for workflow in "$template"/skeleton/.github/workflows/*.yaml; do
-    if ! awk '/uses: coreeng\/p2p\// { found = 1; if ($NF !~ /@codex\/showcase$/) invalid = 1 } END { exit(!found || invalid) }' "$workflow"; then
-      printf 'FAIL: %s: reusable P2P workflows must use @codex/showcase\n' "$workflow"
+    if ! awk '/uses: coreeng\/p2p\// { found = 1; if ($NF !~ /@v1$/) invalid = 1 } END { exit(!found || invalid) }' "$workflow"; then
+      printf 'FAIL: %s: reusable P2P workflows must use @v1\n' "$workflow"
       failures=$((failures + 1))
     fi
   done

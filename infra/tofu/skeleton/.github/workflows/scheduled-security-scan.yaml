@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   scheduled-security-scan:
-    uses: coreeng/p2p/.github/workflows/p2p-workflow-security-scan.yaml@codex/showcase
+    uses: coreeng/p2p/.github/workflows/p2p-workflow-security-scan.yaml@v1
     secrets:
       env_vars: {% raw %}${{ secrets.env_vars }}{% endraw %}
     with:

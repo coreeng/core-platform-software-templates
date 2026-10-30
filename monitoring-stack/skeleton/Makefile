@@ -3,7 +3,7 @@ P2P_TENANT_NAME ?= {{ tenant }}
 P2P_APP_NAME ?= {{ name }}
 
 # Download and include p2p makefile
-$(shell curl -fsSL "https://raw.githubusercontent.com/coreeng/p2p/codex/showcase/p2p.mk" -o ".p2p.mk")
+$(shell curl -fsSL "https://raw.githubusercontent.com/coreeng/p2p/v1/p2p.mk" -o ".p2p.mk")
 include .p2p.mk
 
 # Define required p2p targets
