@@ -207,11 +207,15 @@ package name valid until both its root and functional test installs finish.
 
 > **Toolchain compatibility (2026-11-17):** Keep TypeScript 6.0.3 in applications
 > and Cucumber modules: the current TypeScript ESLint parser requires TypeScript
-> below 6.1. ESLint 10.15.0 advertises framework support, but was tested and fails
-> with `brace_expansion_1.expand is not a function` because its newer minimatch
-> requires a different API than the template's security resolution. Keep ESLint
-> 9.39.5 until that dependency constraint can be updated safely and both production
-> builds pass.
+> below 6.1. ESLint 9.39.5 is the validated baseline. Re-test newer ESLint majors
+> with both production builds before upgrading.
+
+The app manifests pin modern `minimatch` consumers (`glob`, `test-exclude`, and
+Nextra's `@ts-morph/common`) to 11.0.9 for GHSA-g3hv-75wg-m249. Modern minimatch
+requires `brace-expansion` 5.0.13's named API; legacy minimatch 3 keeps the patched
+2.1.8 callable API. Keep the modern brace override before the legacy catch-all.
+Yarn 4 and Yarn 1 use different selectors for these overrides; verify both resolved
+dependency trees and production builds when changing them.
 
 > **Nextra compatibility (2026-11-17):** `nextra`/`nextra-theme-docs` 4.6.1 now pass
 > the production build and browser smoke tests with Next.js 16.4.6, patched stable
