@@ -133,8 +133,8 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.8.1-jdk27-resolute gradle wrapper --gradle-version 9.8.1 \
-  --gradle-distribution-sha256-sum dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f
+  docker.io/gradle:9.9.1-jdk27-resolute gradle wrapper --gradle-version 9.9.1 \
+  --gradle-distribution-sha256-sum d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228
 ```
 
 This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
@@ -205,22 +205,21 @@ When regenerating a nested Yarn 4 test module, recreate an empty `yarn.lock` bef
 `yarn install` so Yarn treats it as an independent project. Keep the Nextra parent
 package name valid until both its root and functional test installs finish.
 
-> **Toolchain compatibility (2026-10-13):** Next.js 16.4.0 uses a TypeScript ESLint
-> stack that rejects TypeScript 7, and its ESLint plugins require ESLint 9. Keep
-> TypeScript on the latest supported 6.x release (6.0.3) in applications and Cucumber
-> modules, and ESLint on the latest supported 9.x release (9.39.5). Re-test newer
-> majors only when the framework and test tooling support them.
+> **Toolchain compatibility (2026-11-17):** Keep TypeScript 6.0.3 in applications
+> and Cucumber modules: the current TypeScript ESLint parser requires TypeScript
+> below 6.1. ESLint 10.15.0 advertises framework support, but was tested and fails
+> with `brace_expansion_1.expand is not a function` because its newer minimatch
+> requires a different API than the template's security resolution. Keep ESLint
+> 9.39.5 until that dependency constraint can be updated safely and both production
+> builds pass.
 
-> **Known Nextra issue:** Do not upgrade `static/nextra` from `nextra`/`nextra-theme-docs`
-> `4.6.0` to `4.6.1` unless the upstream issue is fixed or you have a template code fix.
-> The upgrade has been tested and causes `next build` to fail while prerendering
-> `/_not-found` with digest `1872370934`, including when adding an explicit plain
-> `src/app/not-found.tsx`. Reproduced on 2026-10-13 with Next.js 16.4.0. Keep
-> `static/nextra` on `4.6.0` until a smoke test proves a
-> newer version builds successfully.
+> **Nextra compatibility (2026-11-17):** `nextra`/`nextra-theme-docs` 4.6.1 now pass
+> the production build and browser smoke tests with Next.js 16.4.6, patched stable
+> Zod, and the layout patch below. The previously failing `/_not-found` prerender
+> also builds successfully with this combination.
 
 The Nextra template resolves Zod to a patched stable release. Its
-`scripts/patch-nextra.mjs` corrects the 4.6.0 layout's validation of theme
+`scripts/patch-nextra.mjs` corrects the 4.6.x layout's validation of theme
 configuration after `children` has already been extracted. Keep this patch in
 local postinstall and the Docker dependency stage, which otherwise skips install
 scripts. The patch fails when the upstream layout changes so upgrades require
@@ -510,7 +509,7 @@ Use the same Alpine version as the rest of the template (check the current versi
 `p2p/tests/nft/Dockerfile`):
 
 ```dockerfile
-FROM docker.io/alpine:3.24.2
+FROM docker.io/alpine:3.24.4
 ENTRYPOINT ["echo"]
 CMD ["### extended tests not implemented ###"]
 ```
@@ -572,8 +571,8 @@ Update all four infra templates together. Verify stable upstream releases and up
 - Module version pins under `infrastructure/code/modules/`.
 
 The default provider registry is `registry.opentofu.org`; a newer GitHub or Terraform
-registry release may not yet be published there. As of 2026-10-13, Google and Google
-Beta 8.6.0 are the newest versions it publishes (8.7.0 does not resolve there).
+registry release may not yet be published there. As of 2026-11-17, Google and Google
+Beta 8.11.0 are the newest stable versions it publishes.
 
 For each template, regenerate the lockfile and all supported-platform checksums:
 
