@@ -205,11 +205,13 @@ When regenerating a nested Yarn 4 test module, recreate an empty `yarn.lock` bef
 `yarn install` so Yarn treats it as an independent project. Keep the Nextra parent
 package name valid until both its root and functional test installs finish.
 
-> **Toolchain compatibility (2026-11-17):** Next.js 16.4.6 uses a TypeScript ESLint
-> stack that rejects TypeScript 7, and its ESLint plugins require ESLint 9. Keep
-> TypeScript on the latest supported 6.x release (6.0.3) in applications and Cucumber
-> modules, and ESLint on the latest supported 9.x release (9.39.5). Re-test newer
-> majors only when the framework and test tooling support them.
+> **Toolchain compatibility (2026-11-17):** Keep TypeScript 6.0.3 in applications
+> and Cucumber modules: the current TypeScript ESLint parser requires TypeScript
+> below 6.1. ESLint 10.15.0 advertises framework support, but was tested and fails
+> with `brace_expansion_1.expand is not a function` because its newer minimatch
+> requires a different API than the template's security resolution. Keep ESLint
+> 9.39.5 until that dependency constraint can be updated safely and both production
+> builds pass.
 
 > **Nextra compatibility (2026-11-17):** `nextra`/`nextra-theme-docs` 4.6.1 now pass
 > the production build and browser smoke tests with Next.js 16.4.6, patched stable
