@@ -575,8 +575,8 @@ Update all four infra templates together. Verify stable upstream releases and up
 - Module version pins under `infrastructure/code/modules/`.
 
 The default provider registry is `registry.opentofu.org`; a newer GitHub or Terraform
-registry release may not yet be published there. As of 2026-11-17, Google and Google
-Beta 8.11.0 are the newest stable versions it publishes.
+registry release may not yet be published there. Check that both Google providers
+are available there for all five supported platforms before updating the pins.
 
 For each template, regenerate the lockfile and all supported-platform checksums:
 
