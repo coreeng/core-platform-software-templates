@@ -1,9 +1,12 @@
 # use bash for advanced variable substitutions
 SHELL := /bin/bash
 
-# use local yamale & yamllint if present, otherwise fallback to docker
+# Use local Yamale when available, with Docker as a fallback.
 YAMALE := $$(which yamale 2>/dev/null || echo docker run --rm -v "$${PWD}":/templates -w /templates quay.io/helmpack/chart-testing yamale)
-YAMLLINT := $$(which yamllint 2>/dev/null || echo docker run --rm --mount type=bind,source=.,target=/data docker.io/cytopia/yamllint -s)
+
+# The image contains yamllint 1.38.0.
+YAMLLINT_IMAGE := docker.io/pipelinecomponents/yamllint:0.35.27@sha256:f7f7b4f8824839e33690a880dbe20944128b0dc9c55522a0b92a29b3a905cecf
+YAMLLINT := docker run --rm --mount "type=bind,source=$(CURDIR),target=/data,readonly" --workdir /data --entrypoint yamllint $(YAMLLINT_IMAGE) -s
 
 .PHONY: default
 default: help
