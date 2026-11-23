@@ -75,11 +75,11 @@ Every hardcoded version in the app templates. Use this as a completion checklist
 | `java/web` | `skeleton/gradle/wrapper/gradle-wrapper.properties` | `distributionUrl` Gradle version | must match `gradle:X.Y.Z-jdkNN-<distro>` in Dockerfile; regenerate all wrapper files (see below) |
 | `java/web` | `skeleton/.java-version` | Local JDK version | matches `sourceCompatibility`, build image, and runtime image |
 | `java/web` | `skeleton/service/build.gradle` | Spring Boot, Spring DM, SpringDoc, Guava, HikariCP, `sourceCompatibility`/`targetCompatibility` | [spring.io](https://spring.io/projects/spring-boot), Maven Central |
-| `java/web` | `skeleton/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` (build), `eclipse-temurin:NN-jre-<distro>` (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
+| `java/web` | `skeleton/Dockerfile` | Gradle distribution image, Temurin JDK (build) and JRE (runtime) | [Docker Hub gradle](https://hub.docker.com/_/gradle), [eclipse-temurin](https://hub.docker.com/_/eclipse-temurin) |
 | `java/web` | `p2p/tests/functional/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
-| `java/web` | `p2p/tests/functional/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` | matches main Dockerfile |
+| `java/web` | `p2p/tests/functional/Dockerfile` | Gradle distribution image and Temurin JDK | match main Dockerfile |
 | `java/web` | `p2p/tests/integration/build.gradle` | JUnit BOM, Cucumber, REST Assured, JSONAssert | Maven Central |
-| `java/web` | `p2p/tests/integration/Dockerfile` | `gradle:X.Y.Z-jdkNN-<distro>` | matches main Dockerfile |
+| `java/web` | `p2p/tests/integration/Dockerfile` | Gradle distribution image and Temurin JDK | match main Dockerfile |
 | `nextjs/web` | `skeleton/package.json` | all npm deps | `npx npm-check-updates` |
 | `nextjs/web` | `skeleton/Dockerfile` | `node:X.Y.Z-alpineA.B`, runtime `libstdc++`/`libatomic` | Node major from `engines` in `package.json`; latest Alpine; keep in sync with `@types/node` major |
 | `nextjs/web` | `p2p/tests/functional/package.json` | Cucumber, Playwright | `npx npm-check-updates` |
@@ -133,11 +133,11 @@ When upgrading Gradle, regenerate the wrapper scripts and jar (not just the `.pr
 
 ```bash
 docker run --rm -v "$(pwd)/java/web/skeleton:/project" -w /project \
-  docker.io/gradle:9.9.1-jdk27-resolute gradle wrapper --gradle-version 9.9.1 \
-  --gradle-distribution-sha256-sum d8a18a7a841dd5df825d35a685fad6f2d7f12ac0c280e57b67c27b4a520ba228
+  docker.io/eclipse-temurin:27.0.1.0-jdk-resolute sh gradlew wrapper --gradle-version 9.9.2 \
+  --gradle-distribution-sha256-sum 971fcd7150ca4ba04852c0b2ca0d2d0ab9468e14b03473eab19528809914c76b
 ```
 
-This updates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
+Run the command twice so the target Gradle version regenerates `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar` in addition to `gradle-wrapper.properties`.
 
 Edit versions in `skeleton/service/build.gradle`, then validate:
 
@@ -151,9 +151,10 @@ Also update test dependencies in `p2p/tests/functional/build.gradle` and
 Spring Boot BOM: JUnit BOM, Cucumber, REST Assured, JSONAssert.
 
 When upgrading the JDK version (e.g. 21 → 25), also update `sourceCompatibility` and
-`targetCompatibility` in `build.gradle` to match, and update the `gradle:X.Y.Z-jdkNN-<distro>`
-build image and `eclipse-temurin:NN-jre-<distro>` runtime image in `skeleton/Dockerfile` and the
-test Dockerfiles to the same JDK version. Verify the distro suffix exists for the
+`targetCompatibility` in `build.gradle` to match. Use the same Temurin JDK in the app builder
+and both Gradle test images, and the corresponding Temurin JRE in the app runtime.
+The Gradle image supplies only `/opt/gradle`. Check that both build stages publish manifests
+for AMD64, ARM64, PPC64LE and S390X when updating either image. Verify the distro suffix exists for the
 selected JDK and use it consistently in build
 and runtime images. JDK 27 uses `-resolute` (Ubuntu 26.04); the previous Noble package
 revision pins must not be carried into Resolute. Apply available OS package updates and
@@ -392,7 +393,7 @@ Notable caveats:
 
 | Template | Stage | Base image | Notes |
 |---|---|---|---|
-| `java/web` | functional, integration | `gradle:X.Y.Z-jdkNN-<distro>` | slow on first run (downloads Gradle wrapper + all deps) |
+| `java/web` | functional, integration | Temurin JDK with the Gradle distribution | downloads test dependencies on first run |
 | `nextjs/web`, `static/nextra` | functional | `mcr.microsoft.com/playwright:vX.Y.Z-noble` | large image (~1.5 GB) |
 | `docker/web` | functional, integration, extended | `golang:X.Y.Z-trixie` | Go-based BDD tests (note `-trixie`, not `-alpine`) |
 | **all** | nft | `golang:X.Y.Z-alpineA.B` | builds custom k6 binary with `xk6-prometheus` |
