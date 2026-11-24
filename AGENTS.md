@@ -206,17 +206,18 @@ When regenerating a nested Yarn 4 test module, recreate an empty `yarn.lock` bef
 `yarn install` so Yarn treats it as an independent project. Keep the Nextra parent
 package name valid until both its root and functional test installs finish.
 
-> **Toolchain compatibility (2026-11-17):** Keep TypeScript 6.0.3 in applications
-> and Cucumber modules: the current TypeScript ESLint parser requires TypeScript
-> below 6.1. ESLint 9.39.5 is the validated baseline. Re-test newer ESLint majors
-> with both production builds before upgrading.
+> **Toolchain compatibility (2026-11-24).** Both apps use TypeScript 6.0.3 because
+> their ESLint parser requires TypeScript below 6.1. The Next.js lint plugins support
+> ESLint through major 9. The independent Cucumber suites use TypeScript 7 and
+> load their step definitions with `tsx/cjs`. Their Docker builds type-check the
+> steps before packaging the browser runners.
 
-The app manifests pin modern `minimatch` consumers (`glob`, `test-exclude`, and
-Nextra's `@ts-morph/common`) to 11.0.9 for GHSA-g3hv-75wg-m249. Modern minimatch
-requires `brace-expansion` 5.0.13's named API; legacy minimatch 3 keeps the patched
-2.1.8 callable API. Keep the modern brace override before the legacy catch-all.
-Yarn 4 and Yarn 1 use different selectors for these overrides; verify both resolved
-dependency trees and production builds when changing them.
+The app manifests select `glob` 14.0.6 for Jest and `test-exclude`. Modern
+`minimatch` consumers use 11.0.9 for GHSA-g3hv-75wg-m249. That version uses the
+named export from `brace-expansion` 5.1.0. Legacy consumers use the callable API
+in 2.1.8. Keep the modern brace override before the legacy catch-all. Yarn 4 and
+Yarn 1 use different selectors for these overrides. Verify each dependency tree
+and production build when changing them.
 
 > **Nextra compatibility (2026-11-17):** `nextra`/`nextra-theme-docs` 4.6.1 now pass
 > the production build and browser smoke tests with Next.js 16.4.6, patched stable
@@ -394,7 +395,7 @@ Notable caveats:
 | Template | Stage | Base image | Notes |
 |---|---|---|---|
 | `java/web` | functional, integration | Temurin JDK with the Gradle distribution | downloads test dependencies on first run |
-| `nextjs/web`, `static/nextra` | functional | `mcr.microsoft.com/playwright:vX.Y.Z-noble` | large image (~1.5 GB) |
+| `nextjs/web`, `static/nextra` | functional | `mcr.microsoft.com/playwright:vX.Y.Z-resolute` | large image (~1.5 GB) |
 | `docker/web` | functional, integration, extended | `golang:X.Y.Z-trixie` | Go-based BDD tests (note `-trixie`, not `-alpine`) |
 | **all** | nft | `golang:X.Y.Z-alpineA.B` | builds custom k6 binary with `xk6-prometheus` |
 

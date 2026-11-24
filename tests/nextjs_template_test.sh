@@ -41,13 +41,12 @@ for template in nextjs/web static/nextra; do
     printf 'FAIL: %s: lint-app must run the application linter\n' "$makefile"
     failures=$((failures + 1))
   fi
+  if ! grep -qE '^FROM docker.io/node:26\.13\.1-trixie-slim@sha256:[a-f0-9]{64} AS node-runtime$' \
+    "$template/skeleton/p2p/tests/functional/Dockerfile"; then
+    printf 'FAIL: %s functional tests must use the Node 26 runtime\n' "$template"
+    failures=$((failures + 1))
+  fi
 done
-
-if ! grep -q 'node:26.13.1-bookworm-slim AS node-runtime' \
-  static/nextra/skeleton/p2p/tests/functional/Dockerfile; then
-  printf 'FAIL: static Nextra functional tests must use the Node 26 runtime\n'
-  failures=$((failures + 1))
-fi
 
 if [[ "$failures" -gt 0 ]]; then
   exit 1
